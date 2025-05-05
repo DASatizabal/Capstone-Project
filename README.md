@@ -1,140 +1,38 @@
-# FeNAgO — Next.js Agentic SaaS Boilerplate
+# ShipFast — Typescript
 
-## Overview
+Hey maker 👋 it's Marc from [ShipFast](https://shipfa.st/docs). Let's get your startup off the ground, FAST ⚡️
 
-FeNAgO is a comprehensive Next.js boilerplate for building agentic SaaS applications. It provides a solid foundation with essential integrations and features to help you launch your AI-powered SaaS quickly.
+<sub>**Watch/Star the repo to be notified when updates are pushed**</sub>
 
-## Features
+## Get Started
 
-- **Next.js App Router**: Modern React framework with server components
-- **Authentication**: Multiple auth options including Google OAuth and Magic Links
-- **Database Integration**: MongoDB Atlas for data persistence
-- **Email Functionality**: Integrated with Resend for transactional emails
-- **Payment Processing**: Stripe integration for subscriptions and payments
-- **SEO Optimization**: Built-in SEO tools and best practices
-- **Analytics**: User behavior tracking and conversion analysis
+1. Follow the [Get Started Tutorial](https://shipfa.st/docs) to clone the repo and run your local server 💻
 
-## Documentation
+<sub>**Looking for the /pages router version?** Use this [documentation](https://shipfa.st/docs-old) instead</sub>
 
-### Setup Guides
+2. Follow the [Ship In 5 Minutes Tutorial](https://shipfa.st/docs/tutorials/ship-in-5-minutes) to learn the foundation and ship your app quickly ⚡️
 
-Comprehensive documentation is available in the `/DevDocs` directory:
+## Links
 
-1. [UI Components Guide](./DevDocs/0_UI_Components_Guide.md)
-   - Overview of component framework, UI libraries, and resources
-   - Guide to finding and using DaisyUI, Tailwind, and other components
+-   [📚 Documentation](https://shipfa.st/docs)
+-   [📣 Updates](https://shipfast.beehiiv.com/)
+-   [🧑‍💻 Discord](https://shipfa.st/dashboard)
+-   [🥇 Leaderboard](https://shipfa.st/leaderboard)
 
-2. [Setting Up Email With Resend](./DevDocs/1_Setting_Up_Email_With_Resend.md)
-   - Account creation and API key setup
-   - Configuring email templates
-   - Sending transactional emails
+## Support
 
-3. [Setting Up MongoDB Atlas](./DevDocs/2_Setting_Up_MongoDB_Atlas.md)
-   - Creating a free MongoDB Atlas account
-   - Database setup and connection
-   - Security configuration
+Reach out at hello@shipfa.st
 
-4. [Setting Up Google Authentication](./DevDocs/3_Setting_Up_Google_Authentication.md)
-   - Google Cloud Console configuration
-   - OAuth consent screen setup
-   - NextAuth.js integration
+Let's ship it, FAST ⚡️
 
-5. [Setting Up Magic Links Authentication](./DevDocs/4_Setting_Up_Magic_Links_Authentication.md)
-   - Passwordless authentication flow
-   - Email template customization
-   - NextAuth.js configuration
+\_
 
-6. [Setting Up Stripe Payments](./DevDocs/5_Setting_Up_Stripe_Payments.md)
-   - Stripe account creation and configuration
-   - Product and subscription setup
-   - Webhook integration
+**📈 Grow your startup with [DataFast](https://datafa.st?ref=shipfast_readme)**
 
-7. [Setting Up SEO Features](./DevDocs/6_Setting_Up_SEO_Features.md)
-   - Metadata configuration
-   - Structured data implementation
-   - Sitemap generation
+-   Analyze your traffic
+-   Get insights on your customers
+-   Make data-driven decisions
 
-8. [Setting Up Analytics With DataFast](./DevDocs/7_Setting_Up_Analytics_With_DataFast.md)
-   - Analytics integration
-   - Event tracking
-   - Conversion monitoring
+ShipFast members get 30% OFF on all plans! 🎁
 
-### Development Plans
-
-Detailed development plans are available in the `/DevPlanDocs` directory:
-
-1. [Architecture Overview](./DevPlanDocs/1-Architecture-Overview.md)
-   - System components and interactions
-   - Technical stack details
-
-2. [Components Overview](./DevPlanDocs/2-Components-Overview.md)
-   - UI component structure
-   - Component relationships
-
-3. [Development Plan](./DevPlanDocs/3-Development-Plan.md)
-   - Phase-by-phase implementation strategy
-   - Milestone definitions
-
-4. [API Endpoints](./DevPlanDocs/4-API-Endpoints.md)
-   - API routes and configurations
-   - Request/response formats
-
-5. [Database Models](./DevPlanDocs/5-Database-Models.md)
-   - Data schema design
-   - Relationships between models
-
-6. [Authentication System](./DevPlanDocs/6-Authentication-System.md)
-   - Auth flow details
-   - Session management
-
-7. [Payment Integration](./DevPlanDocs/7-Payment-Integration.md)
-   - Stripe checkout process
-   - Subscription management
-
-8. [Rebranding Strategy](./DevPlanDocs/8-Rebranding-Strategy.md)
-   - Guidelines for customizing the application
-   - Branding element replacement
-
-### Architecture Diagrams
-
-- [System Architecture](./DevPlanDocs/mermaid-system-architecture.md)
-- [Authentication Flow](./DevPlanDocs/mermaid-authentication-flow.md)
-- [Payment & Subscription Flow](./DevPlanDocs/mermaid-payment-subscription-flow.md)
-- [Database Schema](./DevPlanDocs/mermaid-database-schema.md)
-- [Agent Lifecycle](./DevPlanDocs/mermaid-agent-lifecycle.md)
-- [Development Roadmap](./DevPlanDocs/mermaid-development-roadmap.md)
-
-## Getting Started
-
-1. Clone the repository
-2. Install dependencies with `npm install` or `yarn`
-3. Set up your environment variables following the documentation
-4. Run the development server with `npm run dev` or `yarn dev`
-
-## Environment Setup
-
-Copy the `.env.sample` file to `.env.local` and fill in the required variables:
-
-```
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_nextauth_secret
-
-# MongoDB
-MONGODB_URI=your_mongodb_connection_string
-
-# Email (Resend)
-RESEND_API_KEY=your_resend_api_key
-
-# Authentication
-GOOGLE_ID=your_google_client_id
-GOOGLE_SECRET=your_google_client_secret
-
-# Payments (Stripe)
-STRIPE_PUBLIC_KEY=your_stripe_public_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+![datafast](https://github.com/user-attachments/assets/0bf09937-31d1-41d7-82bc-234b5c359a93)
