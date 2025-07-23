@@ -1,82 +1,133 @@
-# FeNAgO — Next.js Agentic SaaS Boilerplate
+# ChoreMinder
 
-![FeNAgO Logo](./app/icon.png)
+**Intelligent Chore Management for Modern Families**
 
-FeNAgO is a complete platform for building agentic AI-powered SaaS products. This template allows you to create Agentic SaaS applications without wasting time on the plumbing and infrastructure so you can build products in days and not months.
+ChoreMinder is an AI-powered household management app designed to help parents assign, track, and verify chores for their children. Built on top of the secure and scalable FeNAgO SaaS boilerplate, ChoreMinder brings together automation, messaging, photo verification, and gamification to make family collaboration fun and effective.
 
-FeNAgO empowers students, developers, startups, and entrepreneurs to build fully agentic SaaS solutions at lightning speed by handling security (logins & registration), database setup, SEO, and monetization right out of the box—powered by Next.js, Tailwind, and React. All you bring is your idea!
+---
 
-<sub>**Watch/Star the repo to be notified when updates are pushed**</sub>
+## 🧭 Mission Statement
 
-## Getting Started
+**ChoreMinder empowers families to stay organized, teach responsibility, and foster healthy habits — one chore at a time.**
 
-Follow these steps to get FeNAgO up and running on your machine:
+---
 
-1. Create a new folder and open WindSurf and the folder  
-2. Clone the repository:
-   ```bash
-   git clone https://github.com/fenago/fenago21.git
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Remove the original remote (if you want to push to your own repository):
-   ```bash
-   git remote remove origin
-   ```
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
+## 🚀 Tech Stack
 
-That will get you running!
+- **Frontend**: Next.js 14 (App Router), TailwindCSS, DaisyUI, TypeScript
+- **Backend**: API Routes, MongoDB (Mongoose), NextAuth.js
+- **AI**: OpenAI GPT integration for personalized chore instructions
+- **Messaging**: Resend (email), WhatsApp API, SMS (Twilio)
+- **Storage**: AWS S3 for photo verification uploads
+- **Payments**: Stripe integration (optional)
 
-6. Environment setup:
-   - Rename `.env.sample` to `.env`
-   - Add your API keys and other credentials to the `.env` file
+---
 
-## Documentation
+## ⚙️ Setup Instructions
 
-FeNAgO comes with comprehensive documentation to help you get started quickly:
+### 1. Clone the Repository
 
-### [DevDocs](./DevDocs)
+```bash
+git clone https://github.com/YOUR-USERNAME/choreminder.git
+cd choreminder
+```
 
-Implementation guides for setting up core functionality:
+### 2. Install Dependencies
 
-- [Setting Up Email With Resend](./DevDocs/1_Setting_Up_Email_With_Resend.md)
-- [Setting Up MongoDB Atlas](./DevDocs/2_Setting_Up_MongoDB_Atlas.md)
-- [Setting Up Google Authentication](./DevDocs/3_Setting_Up_Google_Authentication.md)
-- [Setting Up Magic Links Authentication](./DevDocs/4_Setting_Up_Magic_Links_Authentication.md)
-- [Setting Up Stripe Payments](./DevDocs/5_Setting_Up_Stripe_Payments.md)
-- [Setting Up SEO Features](./DevDocs/6_Setting_Up_SEO_Features.md)
-- [Setting Up Analytics With DataFast](./DevDocs/7_Setting_Up_Analytics_With_DataFast.md)
-- [UI Components Guide](./DevDocs/0_UI_Components_Guide.md)
+```bash
+pnpm install
+# or
+npm install
+# or
+yarn install
+```
 
-### [DevPlanDocs](./DevPlanDocs)
+### 3. Configure Environment Variables
 
-Architecture and development planning documents:
+Create a `.env.local` file:
 
-- [Architecture Overview](./DevPlanDocs/1-Architecture-Overview.md)
-- [Components Overview](./DevPlanDocs/2-Components-Overview.md)
-- [Development Plan](./DevPlanDocs/3-Development-Plan.md)
-- [API Endpoints](./DevPlanDocs/4-API-Endpoints.md)
-- [Database Models](./DevPlanDocs/5-Database-Models.md)
-- [Authentication System](./DevPlanDocs/6-Authentication-System.md)
-- [Payment Integration](./DevPlanDocs/7-Payment-Integration.md)
-- [Rebranding Strategy](./DevPlanDocs/8-Rebranding-Strategy.md)
+```bash
+cp .env.example .env.local
+```
 
-## Features
+Update the following keys in `.env.local`:
 
-- **User Authentication**: Google OAuth and Magic Links
-- **Database Integration**: MongoDB Atlas setup
-- **Payment Processing**: Stripe integration
-- **Email Service**: Resend.com integration
-- **SEO Optimization**: Built-in SEO features
-- **Analytics**: DataFast integration
-- **UI Components**: Modern, responsive design with TailwindCSS and DaisyUI
-- **AI Integration**: OpenAI, ElevenLabs, and more
+```env
+MONGODB_URI=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=http://localhost:3000
 
-## Support
+RESEND_API_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_PUBLIC_KEY=
+STRIPE_WEBHOOK_SECRET=
 
-For questions or support, please reach out to support@fenago.com
+WHATSAPP_ACCESS_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=
+
+AWS_S3_BUCKET=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_S3_REGION=
+```
+
+### 4. Run Locally
+
+```bash
+pnpm dev
+# or
+npm run dev
+```
+
+App will be available at [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 📌 Project Structure
+
+ChoreMinder uses the FeNAgO app directory structure with extensions:
+
+```
+/
+├── app/                # Next.js App Router
+├── components/         # Shared and role-specific UI components
+├── models/             # Mongoose schemas (User, Family, Chore)
+├── libs/               # Utility libraries (API, GPT, Auth, S3)
+├── public/             # Static assets (logo, icons)
+├── types/              # TypeScript type definitions
+├── DevDocs/            # Developer documentation
+└── DevPlanDocs/        # Project planning docs
+```
+
+---
+
+## 🛠️ ChoreMinder-Specific Extensions (Coming Soon)
+
+- `models/Family.ts` — family schema and relationships
+- `models/Chore.ts` — core chore tracking with verification and scheduling
+- `components/ParentDashboard.tsx` — chore assignment and tracking interface
+- `components/ChildDashboard.tsx` — gamified view for children
+- `libs/whatsapp.ts`, `libs/sms.ts` — multi-channel messaging integration
+- `app/api/chores` — chore management endpoints
+- `app/api/photo-verification` — image upload and approval workflows
+- `middleware/familyAuth.ts` — custom access control middleware
+- `scripts/seed-dev.ts` — development seeding script
+
+---
+
+## ✅ TODO (Early Setup Phase)
+
+- [ ] Rebrand visual assets (logo, favicon, theme)
+- [ ] Seed sample families and chores
+- [ ] Implement family switching logic
+- [ ] Extend NextAuth session with role and family data
+- [ ] Test MongoDB and AWS S3 connections
+
+---
+
+## 📄 License
+
+MIT — see [`LICENSE`](./LICENSE) for full terms.

@@ -3,12 +3,12 @@ import { ConfigProps } from "./types/config";
 
 const config = {
   // REQUIRED
-  appName: "FeNAgO",
+  appName: "ChoreMinder",
   // REQUIRED: a short description of your app for SEO tags (can be overwritten)
   appDescription:
-    "The NextJS boilerplate with all you need to build your SaaS, AI tool, or any other web app.",
+    "Tired of the chore wars? Let ChoreMinder keep score and keep the peace.",
   // REQUIRED (no https://, not trailing slash at the end, just the naked domain)
-  domainName: "fenago.com",
+  domainName: "ChoreMinder.ai",
   crisp: {
     // Crisp website ID. IF YOU DON'T USE CRISP: just remove this => Then add a support email in this config file (resend.supportEmail) otherwise customer support won't work.
     id: "",
@@ -22,45 +22,69 @@ const config = {
         // REQUIRED — we use this to find the plan in the webhook (for instance if you want to update the user's credits based on the plan)
         priceId:
           process.env.NODE_ENV === "development"
-            ? "price_1Niyy5AxyNprDp7iZIqEyD2h"
-            : "price_456",
+            ? "prod_SjLRGJOWMe0gYq"
+            : "price_1RnskTRojmUDLEIpouTer7CY",
         //  REQUIRED - Name of the plan, displayed on the pricing page
-        name: "Starter",
+        name: "Starter Plan",
         // A friendly description of the plan, displayed on the pricing page. Tip: explain why this plan and not others
-        description: "Perfect for small projects",
+        description: "Perfect for small families or attentive kids.",
         // The price you want to display, the one user will be charged on Stripe.
-        price: 99,
+        price: 4.99,
         // If you have an anchor price (i.e. $29) that you want to display crossed out, put it here. Otherwise, leave it empty
-        priceAnchor: 149,
+        priceAnchor: 7.49,
         features: [
-          {
-            name: "NextJS boilerplate",
+          { 
+            name: "20 Monthly Messages", 
           },
-          { name: "User oauth" },
-          { name: "Database" },
-          { name: "Emails" },
+          { name: "Add up to 2 kids." },
+          { name: "Give them up to 3 Chores" },
         ],
       },
       {
         priceId:
           process.env.NODE_ENV === "development"
-            ? "price_1O5KtcAxyNprDp7iftKnrrpw"
-            : "price_456",
+            ? "prod_SjLSHtOG47gTv2"
+            : "price_1RnslmRojmUDLEIpRrJnf2w1",
         // This plan will look different on the pricing page, it will be highlighted. You can only have one plan with isFeatured: true
         isFeatured: true,
-        name: "Advanced",
-        description: "You need more power",
-        price: 149,
-        priceAnchor: 299,
+        name: "Mid Plan",
+        description: "For bigger households and distracted kids.",
+        price: 7.99,
+        priceAnchor: 11.99,
+        features: [
+          { 
+            name: "30 Monthly Messages", 
+          },
+          { name: "Add up to 5 kids." },
+          { name: "Give them up to 10 Chores." },
+          { name: "Help them with AI Instructions." },
+          { name: "Set reocurring schedules." },
+          { name: "Set rewards." },
+        ],
+      },
+      {
+        priceId:
+          process.env.NODE_ENV === "development"
+            ? "prod_SjLSHtOG47gTv2"
+            : "price_1RnslmRojmUDLEIpRrJnf2w1",
+        // This plan will look different on the pricing page, it will be highlighted. You can only have one plan with isFeatured: true
+        isFeatured: true,
+        name: "The Nanny",
+        description: "For busy parents, outgunned and outnumbered by messy children. Use only when all hope is lost.",
+        price: 12.99,
+        priceAnchor: 19.99,
         features: [
           {
-            name: "Agentic SaaS app NextJS boilerplate",
+            name: "Unlimited messages",
           },
-          { name: "User oauth" },
-          { name: "Database" },
-          { name: "Emails" },
-          { name: "1 year of updates" },
-          { name: "24/7 support" },
+          { name: "Add up to 10 kids." },
+          { name: "Give them ALL the Chores." },
+          { name: "Help them with AI Instructions." },
+          { name: "Set reocurring schedules." },
+          { name: "Set rewards." },
+          { name: "Online Support."},
+          { name: "24/7 AI Child psychiatric assistance."}
+          { name: "Daily tips on how to manage your busy household."}
         ],
       },
     ],
@@ -73,11 +97,11 @@ const config = {
   },
   resend: {
     // REQUIRED — Email 'From' field to be used when sending magic login links
-    fromNoReply: `FeNAgO <noreply@resend.fenago.com>`,
+    fromNoReply: `ChildMinder <noreply@resend.ChildMinder.ai>`,
     // REQUIRED — Email 'From' field to be used when sending other emails, like abandoned carts, updates etc..
-    fromAdmin: `Dr Lee at FeNAgO <drlee@resend.fenago.com>`,
+    fromAdmin: `Parent Helper at ChildMinder <PHelper@resend.ChildMinder.ai>`,
     // Email shown to customer if they need support. Leave empty if not needed => if empty, set up Crisp above, otherwise you won't be able to offer customer support."
-    supportEmail: "socrates.73@gmail.com",
+    supportEmail: "support@ChildMinder.ai",
   },
   colors: {
     // REQUIRED — The DaisyUI theme to use (added to the main layout.js). Leave blank for default (light & dark mode). If you use any theme other than light/dark, you need to add it in config.tailwind.js in daisyui.themes.
