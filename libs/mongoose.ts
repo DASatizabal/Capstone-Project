@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
+import dotenv from 'dotenv';
 import User from "@/models/User";
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
 
 const connectMongo = async () => {
   if (!process.env.MONGODB_URI) {

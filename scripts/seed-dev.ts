@@ -1,3 +1,8 @@
+import dotenv from 'dotenv';
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
+
 import connectMongo from "@/libs/mongoose";
 import User from "@/models/User";
 import Family from "@/models/Family";
