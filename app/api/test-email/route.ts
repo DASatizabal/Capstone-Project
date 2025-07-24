@@ -3,12 +3,13 @@ import { NextResponse } from 'next/server';
 import { emailService } from '@/libs/resend';
 
 // Only enable this endpoint in development
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ error: 'Disabled in production' }, { status: 404 });
   }
   
-  const testEmail = 'your-test-email@example.com';
+  // Use a test email from environment variables or fallback
+  const testEmail = process.env.TEST_EMAIL || 'test@example.com';
   
   try {
     const result = await emailService.sendWelcomeEmail(
@@ -23,6 +24,18 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error('Test email error:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, { status: 500 });
   }
+}
+
+// Optional: Keep GET for easier testing via browser
+export async function GET() {
+  return NextResponse.json({ 
+    message: 'Send a POST request to test email functionality',
+    method: 'POST',
+    body: '{}'
+  });
 }

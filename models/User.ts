@@ -1,8 +1,20 @@
-import mongoose from "mongoose";
+import mongoose, { Document, Model } from "mongoose";
 import toJSON from "./plugins/toJSON";
 
-// USER SCHEMA
-const userSchema = new mongoose.Schema(
+// Interface for User document
+export interface IUser extends Document {
+  name?: string;
+  email: string;
+  image?: string;
+  customerId?: string;
+  priceId?: string;
+  hasAccess: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  profileUrl?: string;
+}
+
+const userSchema = new mongoose.Schema<IUser>(
   {
     name: {
       type: String,
@@ -10,28 +22,30 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      trim: true,
+      required: [true, 'Email is required'],
+      unique: true,
       lowercase: true,
+      trim: true,
       private: true,
+      match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address'],
     },
     image: {
       type: String,
     },
-    // Used in the Stripe webhook to identify the user in Stripe and later create Customer Portal or prefill user credit card details
     customerId: {
       type: String,
-      validate(value: string) {
-        return value.includes("cus_");
+      validate: {
+        validator: (val: string) => !val || val.startsWith("cus_"),
+        message: 'Customer ID must start with "cus_"'
       },
     },
-    // Used in the Stripe webhook. should match a plan in config.js file.
     priceId: {
       type: String,
-      validate(value: string) {
-        return value.includes("price_");
+      validate: {
+        validator: (val: string) => !val || val.startsWith("price_"),
+        message: 'Price ID must start with "price_"'
       },
     },
-    // Used to determine if the user has access to the product—it's turn on/off by the Stripe webhook
     hasAccess: {
       type: Boolean,
       default: false,
@@ -39,11 +53,30 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: { 
+      virtuals: true,
+      transform: function(doc, ret) {
+        // Remove sensitive data from JSON output
+        delete ret.__v;
+        return ret;
+      }
+    },
   }
 );
 
-// add plugin that converts mongoose to json
+// Add virtual for profile URL
+userSchema.virtual('profileUrl').get(function(this: IUser) {
+  return this.image || '/images/default-avatar.png';
+});
+
+// Add indexes for better query performance
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ customerId: 1 }, { unique: true, sparse: true });
+
+// Add the toJSON plugin
 userSchema.plugin(toJSON);
 
-export default mongoose.models.User || mongoose.model("User", userSchema);
+// Create the model with proper typing
+const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", userSchema);
+
+export default User;
