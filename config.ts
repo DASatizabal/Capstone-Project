@@ -83,7 +83,7 @@ const config = {
           { name: "Set reocurring schedules." },
           { name: "Set rewards." },
           { name: "Online Support."},
-          { name: "24/7 AI Child psychiatric assistance."}
+          { name: "24/7 AI Child psychiatric assistance."},
           { name: "Daily tips on how to manage your busy household."}
         ],
       },
