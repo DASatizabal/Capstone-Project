@@ -60,9 +60,9 @@ import {
     );
   };
   
-  // You can export a function to render the email to HTML
-  export function renderWelcomeEmail(props: WelcomeEmailProps) {
-    return render(<WelcomeEmail {...props} />);
+  // Export a function to render the email to HTML asynchronously
+  export async function renderWelcomeEmail(props: WelcomeEmailProps): Promise<string> {
+    return await render(<WelcomeEmail {...props} />);
   }
   
   // Styles

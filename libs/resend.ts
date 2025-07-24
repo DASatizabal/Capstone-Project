@@ -15,7 +15,7 @@ export const emailService = {
    */
   sendWelcomeEmail: async (to: string, name: string) => {
     try {
-      const html = renderWelcomeEmail({
+      const html = await renderWelcomeEmail({
         name,
         appName: config.appName,
         dashboardUrl: `${process.env.NEXTAUTH_URL}/dashboard`,
@@ -27,6 +27,18 @@ export const emailService = {
         subject: `Welcome to ${config.appName}!`,
         html,
       });
+      
+      if (error) {
+        console.error('Error sending welcome email:', error);
+        return { success: false, error };
+      }
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Failed to send welcome email:', error);
+      return { success: false, error };
+    }
+  },
   /* sendWelcomeEmail: async (to: string, name: string) => {
     try {
       const { data, error } = await resend.emails.send({

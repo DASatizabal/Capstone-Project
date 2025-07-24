@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import connectMongo from '@/libs/mongo'; // This file should exist already
+import clientPromise from '@/libs/mongo';
 import mongoose from 'mongoose';
 
 export async function GET() {
   try {
-    await connectMongo(); // Connect to your MongoDB instance
-    const status = mongoose.connection.readyState;
+    const client = await clientPromise;
+    const status = client ? 1 : 0; // 1 means connected
 
     const statusMap = {
       0: 'Disconnected',
