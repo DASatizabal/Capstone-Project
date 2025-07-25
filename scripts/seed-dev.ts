@@ -3,12 +3,21 @@ import dotenv from 'dotenv';
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
 
+// Verify required environment variables
+if (!process.env.DATABASE_URL) {
+  console.error('❌ Error: DATABASE_URL is not defined in .env.local');
+  process.exit(1);
+}
+
 import connectMongo from "@/libs/mongoose";
 import User from "@/models/User";
 import Family from "@/models/Family";
 import Chore from "@/models/Chore";
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
+
+console.log('🌱 Starting database seeding...');
+console.log(`🔗 Using database: ${process.env.DATABASE_URL.split('@').pop()?.split('/')[1] || 'unknown'}`);
 
 // Configuration
 const CONFIG = {
@@ -38,10 +47,14 @@ const generatePhone = () => {
   return `(${areaCode}) ${firstPart}-${secondPart}`;
 };
 
-const randomDate = (days: number) => {
-  const date = new Date();
-  date.setDate(date.getDate() + Math.floor(Math.random() * days));
-  return date;
+const randomDate = (daysInFuture: number) => {
+  const now = new Date();
+  const futureDate = new Date(now);
+  // Add 1 to daysInFuture to ensure we don't get today's date
+  futureDate.setDate(now.getDate() + 1 + Math.floor(Math.random() * daysInFuture));
+  // Set a random time during the day
+  futureDate.setHours(9 + Math.floor(Math.random() * 8), 0, 0, 0); // Between 9am and 5pm
+  return futureDate;
 };
 
 const getRandomStatus = () => {
@@ -71,12 +84,21 @@ const generateChore = (familyId: any, assignedTo: string, assignedBy: string) =>
 
   const template = faker.helpers.arrayElement(choreTemplates);
   const status = getRandomStatus();
-  const completedAt = ['completed', 'verified'].includes(status) 
-    ? randomDate(-14) 
-    : undefined;
-  const verifiedAt = status === 'verified' 
-    ? new Date(completedAt!.getTime() + 1000 * 60 * 60) // 1 hour after completion
-    : undefined;
+  let completedAt: Date | undefined;
+  let verifiedAt: Date | undefined;
+
+  if (['completed', 'verified'].includes(status)) {
+    // For completed/verified chores, set completion to a random time in the past 14 days
+    const now = new Date();
+    completedAt = new Date(now);
+    completedAt.setDate(now.getDate() - Math.floor(Math.random() * 14));
+    completedAt.setHours(9 + Math.floor(Math.random() * 8), 0, 0, 0);
+    
+    if (status === 'verified') {
+      // Set verification to 1-3 hours after completion
+      verifiedAt = new Date(completedAt.getTime() + (1 + Math.floor(Math.random() * 3)) * 60 * 60 * 1000);
+    }
+  }
 
   return {
     family: familyId,

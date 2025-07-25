@@ -68,7 +68,7 @@ const config = {
             ? "prod_SjLSHtOG47gTv2"
             : "price_1RnslmRojmUDLEIpRrJnf2w1",
         // This plan will look different on the pricing page, it will be highlighted. You can only have one plan with isFeatured: true
-        isFeatured: true,
+        isFeatured: false,
         name: "The Nanny",
         description: "For busy parents, outgunned and outnumbered by messy children. Use only when all hope is lost.",
         price: 12.99,

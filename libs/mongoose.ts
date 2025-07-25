@@ -6,13 +6,16 @@ import User from "@/models/User";
 dotenv.config({ path: '.env.local' });
 
 const connectMongo = async () => {
-  if (!process.env.MONGODB_URI) {
+  const connectionString = process.env.DATABASE_URL || process.env.MONGODB_URI;
+  
+  if (!connectionString) {
     throw new Error(
-      "Add the MONGODB_URI environment variable inside .env.local to use mongoose"
+      "Add the DATABASE_URL environment variable inside .env.local to use mongoose"
     );
   }
+  
   return mongoose
-    .connect(process.env.MONGODB_URI)
+    .connect(connectionString)
     .catch((e) => console.error("Mongoose Client Error: " + e.message));
 };
 
