@@ -23,9 +23,19 @@ async function testConnection() {
   } catch (error) {
     console.error('Connection error:');
     console.error('------------------');
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    console.error('Error code:', error.code);
+    
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      
+      // Check if it's a Prisma error with a code property
+      if ('code' in error) {
+        console.error('Error code:', (error as any).code);
+      }
+    } else {
+      console.error('Unknown error:', error);
+    }
+    
     console.error('------------------');
     console.error('Make sure your DATABASE_URL in .env.local is correct and includes a database name.');
     console.error('Example: mongodb+srv://username:password@cluster0.xxx.mongodb.net/your-database-name?retryWrites=true&w=majority');

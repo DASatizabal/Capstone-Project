@@ -12,12 +12,12 @@ interface NextAuthOptionsExtended extends NextAuthOptions {
 
 export const authOptions: NextAuthOptionsExtended = {
   // Set any random key in .env.local
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-key',
   providers: [
     GoogleProvider({
       // Follow the "Login with Google" tutorial to get your credentials
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
+      clientId: process.env.GOOGLE_ID || '',
+      clientSecret: process.env.GOOGLE_SECRET || '',
       async profile(profile) {
         return {
           id: profile.sub,
@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptionsExtended = {
               port: 465,
               auth: {
                 user: "resend",
-                pass: process.env.RESEND_API_KEY,
+                pass: process.env.RESEND_API_KEY || '',
               },
             },
             from: config.resend.fromNoReply,
@@ -49,12 +49,12 @@ export const authOptions: NextAuthOptionsExtended = {
   // New users will be saved in Database (MongoDB Atlas). Each user (model) has some fields like name, email, image, etc..
   // Requires a MongoDB database. Set MONOGODB_URI env variable.
   // Learn more about the model type: https://next-auth.js.org/v3/adapters/models
-  adapter: MongoDBAdapter(clientPromise), //Fixed
+  adapter: clientPromise ? MongoDBAdapter(clientPromise) : undefined,
 
   callbacks: {
     session: async ({ session, token }) => {
       if (session?.user) {
-        session.user.id = token.sub;
+        (session.user as any).id = token.sub || '';
       }
       return session;
     },

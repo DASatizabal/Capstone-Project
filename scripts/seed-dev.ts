@@ -1,7 +1,13 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { faker } from '@faker-js/faker';
+import bcrypt from 'bcryptjs';
+import mongoose, { Types } from 'mongoose';
+type ObjectId = Types.ObjectId;
 
 // Load environment variables from .env.local
-dotenv.config({ path: '.env.local' });
+const envPath = path.resolve(process.cwd(), '.env.local');
+dotenv.config({ path: envPath });
 
 // Verify required environment variables
 if (!process.env.DATABASE_URL) {
@@ -9,12 +15,13 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-import connectMongo from "@/libs/mongoose";
-import User from "@/models/User";
-import Family from "@/models/Family";
-import Chore from "@/models/Chore";
-import { faker } from "@faker-js/faker";
-import bcrypt from "bcryptjs";
+import connectMongo from '../libs/mongoose';
+import User from '../models/User';
+import Family from '../models/Family';
+import Chore from '../models/Chore';
+import type { IUser } from '../models/User';
+import type { IFamily } from '../models/Family';
+import type { IChore } from '../models/Chore';
 
 console.log('🌱 Starting database seeding...');
 console.log(`🔗 Using database: ${process.env.DATABASE_URL.split('@').pop()?.split('/')[1] || 'unknown'}`);
@@ -39,7 +46,16 @@ const CONFIG = {
 };
 
 // Helper functions
-const generatePhone = () => {
+interface MemberData {
+  name: string;
+  role: 'parent' | 'child';
+  phone?: string;
+  userId?: ObjectId | string;
+  age?: number;
+  _id?: ObjectId | string;
+}
+
+const generatePhone = (): string => {
   // Format: (123) 456-7890
   const areaCode = faker.string.numeric({ length: 3, allowLeadingZeros: true });
   const firstPart = faker.string.numeric({ length: 3, allowLeadingZeros: true });
@@ -47,7 +63,7 @@ const generatePhone = () => {
   return `(${areaCode}) ${firstPart}-${secondPart}`;
 };
 
-const randomDate = (daysInFuture: number) => {
+const randomDate = (daysInFuture: number): Date => {
   const now = new Date();
   const futureDate = new Date(now);
   // Add 1 to daysInFuture to ensure we don't get today's date
@@ -57,7 +73,7 @@ const randomDate = (daysInFuture: number) => {
   return futureDate;
 };
 
-const getRandomStatus = () => {
+const getRandomStatus = (): 'pending' | 'completed' | 'verified' => {
   const rand = Math.random();
   if (rand < CONFIG.COMPLETION_RATE) {
     return Math.random() < CONFIG.VERIFICATION_RATE ? 'verified' : 'completed';
@@ -66,20 +82,62 @@ const getRandomStatus = () => {
 };
 
 // Generate realistic chore data
-const generateChore = (familyId: any, assignedTo: string, assignedBy: string) => {
-  const choreTemplates = [
-    { title: "Take out the trash", estimatedMinutes: 5 },
-    { title: "Wash the dishes", estimatedMinutes: 15 },
-    { title: "Vacuum living room", estimatedMinutes: 20 },
-    { title: "Walk the dog", estimatedMinutes: 30 },
-    { title: "Clean your room", estimatedMinutes: 25 },
-    { title: "Do laundry", estimatedMinutes: 45 },
-    { title: "Set the table", estimatedMinutes: 5 },
-    { title: "Water plants", estimatedMinutes: 10 },
-    { title: "Take out recycling", estimatedMinutes: 10 },
-    { title: "Clean bathroom", estimatedMinutes: 30 },
-    { title: "Mow the lawn", estimatedMinutes: 60 },
-    { title: "Wash the car", estimatedMinutes: 45 },
+interface ChoreTemplate {
+  title: string;
+  estimatedMinutes: number;
+}
+
+// Define a more specific type for the chore data used in seeding
+interface IChoreData {
+  title: string;
+  description?: string;
+  instructions?: string;
+  status: 'pending' | 'in-progress' | 'completed' | 'verified' | 'rejected';
+  dueDate?: Date;
+  completedAt?: Date;
+  verifiedAt?: Date | null;
+  requiresParentApproval: boolean;
+  points: number;
+  priority: 'low' | 'medium' | 'high';
+  category?: string;
+  estimatedMinutes: number;
+  actualMinutes?: number;
+  imageUrl?: string;
+  rejectionReason?: string;
+  recurrence?: string;
+  assignedTo: ObjectId | string;
+  assignedBy: ObjectId | string;
+  createdBy: ObjectId | string;
+  family: ObjectId | string;
+  history?: Array<{
+    status: string;
+    changedAt: Date;
+    changedBy: ObjectId | string;
+    notes?: string;
+  }>;
+  createdAt?: Date;
+  updatedAt?: Date;
+  deletedAt?: Date | null;
+}
+
+const generateChore = (
+  familyId: ObjectId,
+  assignedTo: ObjectId,
+  assignedBy: ObjectId
+): IChoreData => {
+  const choreTemplates: ChoreTemplate[] = [
+    { title: 'Take out the trash', estimatedMinutes: 5 },
+    { title: 'Wash the dishes', estimatedMinutes: 15 },
+    { title: 'Vacuum living room', estimatedMinutes: 20 },
+    { title: 'Walk the dog', estimatedMinutes: 30 },
+    { title: 'Clean your room', estimatedMinutes: 25 },
+    { title: 'Do laundry', estimatedMinutes: 45 },
+    { title: 'Set the table', estimatedMinutes: 5 },
+    { title: 'Water plants', estimatedMinutes: 10 },
+    { title: 'Take out recycling', estimatedMinutes: 10 },
+    { title: 'Clean bathroom', estimatedMinutes: 30 },
+    { title: 'Mow the lawn', estimatedMinutes: 60 },
+    { title: 'Wash the car', estimatedMinutes: 45 },
   ];
 
   const template = faker.helpers.arrayElement(choreTemplates);
@@ -102,25 +160,35 @@ const generateChore = (familyId: any, assignedTo: string, assignedBy: string) =>
 
   return {
     family: familyId,
-    assignedTo,
+    assignedTo: assignedTo,
     title: template.title,
     description: faker.lorem.sentence({ min: 5, max: 12 }),
     instructions: faker.lorem.paragraph({ min: 1, max: 3 }),
-    recurrence: faker.helpers.arrayElement(["once", "daily", "weekly", "monthly"]),
+    recurrence: faker.helpers.arrayElement(['daily', 'weekly', 'monthly', 'once']),
     estimatedMinutes: template.estimatedMinutes,
-    status,
-    dueDate: randomDate(14),
+    status: faker.helpers.arrayElement(['pending', 'completed', 'verified']) as 'pending' | 'completed' | 'verified',
     completedAt,
     verifiedAt,
     requiresParentApproval: faker.datatype.boolean({ probability: 0.7 }),
     createdBy: assignedBy,
-    assignedBy,
-    priority: faker.helpers.arrayElement(['low', 'medium', 'high']),
+    assignedBy: assignedBy,
+    priority: faker.helpers.arrayElement(['low', 'medium', 'high']) as 'low' | 'medium' | 'high',
+    points: Math.floor(Math.random() * 46) + 5, // Random number between 5 and 50
+    category: faker.helpers.arrayElement(['Cleaning', 'Cooking', 'Shopping', 'Other']),
+    history: [{
+      status: 'pending',
+      changedAt: new Date(),
+      changedBy: assignedBy,
+      notes: 'Chore created'
+    }]
   };
 };
 
 // Generate family member data
-const generateMember = (isParent: boolean, userId?: string) => {
+const generateMember = (
+  isParent: boolean,
+  userId?: ObjectId
+): MemberData => {
   const gender = faker.person.sex() as 'male' | 'female';
   const firstName = faker.person.firstName(gender);
   const lastName = faker.person.lastName();
@@ -135,7 +203,7 @@ const generateMember = (isParent: boolean, userId?: string) => {
   };
 };
 
-async function run() {
+async function run(): Promise<void> {
   try {
     console.log("🔌 Connecting to MongoDB...");
     await connectMongo();
@@ -158,7 +226,10 @@ async function run() {
       image: faker.image.avatar(),
       hasAccess: true,
       emailVerified: new Date(),
-    });
+      role: 'admin',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as const);
 
     console.log(`\n👪 Creating ${CONFIG.FAMILY_COUNT} families...`);
     
@@ -195,10 +266,46 @@ async function run() {
         max: CONFIG.MAX_CHORES 
       });
       
-      const chores = [];
+            const chores: Array<Partial<IChore>> = [];
       for (let j = 0; j < choreCount; j++) {
         const assignee = faker.helpers.arrayElement(members);
-        chores.push(generateChore(family._id, assignee.name, admin._id));
+        if (assignee.userId) {  // Ensure assignee has a userId
+        const choreData = generateChore(
+          new Types.ObjectId(family._id),
+          new Types.ObjectId(assignee.userId),
+          new Types.ObjectId(admin._id)
+        );
+        
+        const choreDataWithDefaults = {
+          ...choreData,
+          _id: new Types.ObjectId(),
+          family: new Types.ObjectId(family._id),
+          assignedTo: new Types.ObjectId(assignee.userId),
+          assignedBy: new Types.ObjectId(admin._id),
+          createdBy: new Types.ObjectId(admin._id),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          // Ensure all required fields have values
+          title: choreData.title || 'Chore',
+          status: choreData.status || 'pending',
+          priority: choreData.priority || 'medium',
+          points: choreData.points || 10,
+          estimatedMinutes: choreData.estimatedMinutes || 15,
+          requiresParentApproval: choreData.requiresParentApproval !== undefined 
+            ? choreData.requiresParentApproval 
+            : faker.datatype.boolean({ probability: 0.7 }),
+          history: choreData.history || [{
+            status: 'pending',
+            changedAt: new Date(),
+            changedBy: new Types.ObjectId(admin._id),
+            notes: 'Chore created'
+          }]
+        };
+        
+        const chore = choreDataWithDefaults as unknown as IChore;
+        
+        chores.push(chore);
+      }
       }
 
       await Chore.insertMany(chores);
@@ -206,12 +313,15 @@ async function run() {
     }
 
     // Create some additional users
-    const additionalUsers = Array(3).fill(null).map(() => ({
+    const additionalUsers = Array.from({ length: 3 }, () => ({
       name: faker.person.fullName(),
-      email: faker.internet.email(),
+      email: faker.internet.email().toLowerCase(),
       password: faker.internet.password(),
       image: faker.image.avatar(),
       hasAccess: true,
+      emailVerified: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }));
     
     await User.insertMany(additionalUsers);
@@ -221,7 +331,14 @@ async function run() {
     const familyCount = await Family.countDocuments();
     const choreCount = await Chore.countDocuments();
 
-    console.log("\n✅ Seed data created successfully!");
+    console.log('\n✅ Seed data created successfully!');
+    console.log(`   👥 ${userCount} users`);
+    console.log(`   👪 ${familyCount} families`);
+    console.log(`   🧹 ${choreCount} chores`);
+    
+    // Close the connection
+    await mongoose.disconnect();
+    console.log('\n🔌 Disconnected from MongoDB');
     console.log("\n📊 Database Summary:");
     console.log(`   👥 Users: ${userCount}`);
     console.log(`   👪 Families: ${familyCount}`);

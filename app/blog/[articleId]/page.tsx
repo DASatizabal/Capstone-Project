@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Script from "next/script";
+import { notFound } from "next/navigation";
 import { articles } from "../_assets/content";
 import BadgeCategory from "../_assets/components/BadgeCategory";
 import Avatar from "../_assets/components/Avatar";
@@ -12,6 +13,10 @@ export async function generateMetadata({
   params: { articleId: string };
 }) {
   const article = articles.find((article) => article.slug === params.articleId);
+
+  if (!article) {
+    notFound();
+  }
 
   return getSEOTags({
     title: article.title,
@@ -42,6 +47,11 @@ export default async function Article({
   params: { articleId: string };
 }) {
   const article = articles.find((article) => article.slug === params.articleId);
+  
+  if (!article) {
+    notFound();
+  }
+  
   const articlesRelated = articles
     .filter(
       (a) =>

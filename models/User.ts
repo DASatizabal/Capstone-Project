@@ -1,20 +1,36 @@
-import mongoose, { Document, Model } from "mongoose";
-import toJSON from "./plugins/toJSON";
+import mongoose, { Document, Model, Schema } from 'mongoose';
+import toJSON from './plugins/toJSON';
+
+// User role type
+export type UserRole = 'user' | 'admin' | 'parent' | 'child';
 
 // Interface for User document
 export interface IUser extends Document {
   name?: string;
   email: string;
   image?: string;
+  emailVerified?: Date;
+  hashedPassword?: string;
+  role: UserRole;
   customerId?: string;
   priceId?: string;
   hasAccess: boolean;
   createdAt: Date;
   updatedAt: Date;
   profileUrl?: string;
+  familyId?: Schema.Types.ObjectId;
+  families?: Schema.Types.ObjectId[];
+  resetToken?: string;
+  resetTokenExpiry?: Date;
 }
 
-const userSchema = new mongoose.Schema<IUser>(
+export interface IUserMethods {
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+export type UserModel = Model<IUser, {}, IUserMethods>;
+
+const userSchema = new mongoose.Schema<IUser, UserModel>(
   {
     name: {
       type: String,
@@ -29,8 +45,37 @@ const userSchema = new mongoose.Schema<IUser>(
       private: true,
       match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address'],
     },
+    emailVerified: {
+      type: Date,
+    },
+    hashedPassword: {
+      type: String,
+      private: true,
+      select: false,
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin', 'parent', 'child'],
+      default: 'user',
+    },
     image: {
       type: String,
+    },
+    familyId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Family',
+    },
+    families: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Family',
+    }],
+    resetToken: {
+      type: String,
+      select: false,
+    },
+    resetTokenExpiry: {
+      type: Date,
+      select: false,
     },
     customerId: {
       type: String,
@@ -63,6 +108,13 @@ const userSchema = new mongoose.Schema<IUser>(
     },
   }
 );
+
+// Add method to compare passwords
+userSchema.methods.comparePassword = async function (candidatePassword: string) {
+  if (!this.hashedPassword) return false;
+  const bcrypt = await import('bcryptjs');
+  return bcrypt.compare(candidatePassword, this.hashedPassword);
+};
 
 // Add virtual for profile URL
 userSchema.virtual('profileUrl').get(function(this: IUser) {

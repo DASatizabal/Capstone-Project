@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import { authors, articles } from "../../_assets/content";
 import CardArticle from "../../_assets/components/CardArticle";
 import { getSEOTags } from "@/libs/seo";
@@ -10,6 +11,10 @@ export async function generateMetadata({
   params: { authorId: string };
 }) {
   const author = authors.find((author) => author.slug === params.authorId);
+
+  if (!author) {
+    notFound();
+  }
 
   return getSEOTags({
     title: `${author.name}, Author at ${config.appName}'s Blog`,
@@ -24,6 +29,11 @@ export default async function Author({
   params: { authorId: string };
 }) {
   const author = authors.find((author) => author.slug === params.authorId);
+  
+  if (!author) {
+    notFound();
+  }
+  
   const articlesByAuthor = articles
     .filter((article) => article.author.slug === author.slug)
     .sort(
@@ -57,7 +67,7 @@ export default async function Author({
             className="rounded-box w-[12rem] md:w-[16rem] "
           />
 
-          {author.socials?.length > 0 && (
+          {author.socials && author.socials.length > 0 && (
             <div className="flex flex-col md:flex-row gap-4">
               {author.socials.map((social) => (
                 <a

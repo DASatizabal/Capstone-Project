@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Schema, Document, SchemaTypeOptions } from 'mongoose';
+import mongoose, { Schema, Document, SchemaTypeOptions, SchemaDefinition, SchemaDefinitionType } from 'mongoose';
 
 // Add this type at the top of the file
 type TransformFunction = (doc: any, ret: any, options: any) => any;
@@ -40,7 +40,7 @@ const deleteAtPath = (obj: Record<string, any>, path: string[], index: number): 
  * - Supports nested schema paths
  * - Type-safe implementation
  */
-const toJSON = <T extends Document>(schema: Schema<T>): void => {
+const toJSON = (schema: Schema): void => {
   // Get all paths that should be transformed
   const transformPaths: Array<{
     path: string;

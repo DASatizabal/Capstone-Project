@@ -46,17 +46,17 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Error details:', {
-      message: error.message,
-      name: error.name,
-      code: error.code,
-      stack: error.stack,
+      message: error instanceof Error ? error.message : String(error),
+      name: (error as any)?.name,
+      code: (error as any)?.code,
+      stack: (error as any)?.stack,
     });
     
     return NextResponse.json(
       { 
         error: 'Failed to fetch users',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-        code: error.code || 'UNKNOWN_ERROR'
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : undefined,
+        code: (error as any)?.code || 'UNKNOWN_ERROR'
       },
       { status: 500 }
     );

@@ -2,12 +2,14 @@ import mongoose, { Document, Model, Types } from "mongoose";
 import toJSON from "./plugins/toJSON";
 
 // Types for the Family Member subdocument
+export type FamilyMemberRole = 'parent' | 'child' | 'admin';
+
 export interface IFamilyMember {
   name: string;
   phone?: string;
   age?: number;
-  role: "parent" | "child";
-  userId?: Types.ObjectId; // Reference to User model if they have an account
+  role: FamilyMemberRole;
+  user: Types.ObjectId; // Reference to User model if they have an account
 }
 
 // Interface for the Family document
@@ -18,8 +20,11 @@ export interface IFamily extends Document {
   createdAt: Date;
   updatedAt: Date;
   // Virtuals
-  parents: IFamilyMember[];
-  children: IFamilyMember[];
+  parentUsers: Types.ObjectId[];
+  childUsers: Types.ObjectId[];
+  // Methods
+  getParentIds(): Types.ObjectId[];
+  getChildIds(): Types.ObjectId[];
 }
 
 const familyMemberSchema = new mongoose.Schema<IFamilyMember>({
@@ -46,15 +51,15 @@ const familyMemberSchema = new mongoose.Schema<IFamilyMember>({
   role: { 
     type: String, 
     enum: {
-      values: ["parent", "child"],
-      message: 'Role must be either "parent" or "child"'
+      values: ["parent", "child", "admin"],
+      message: 'Role must be "parent", "child", or "admin"'
     }, 
     default: "child" 
   },
-  userId: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: false
+    required: true
   }
 });
 
@@ -87,17 +92,36 @@ const familySchema = new mongoose.Schema<IFamily>(
 );
 
 // Add virtuals for easy access to parents and children
-familySchema.virtual('parents').get(function(this: IFamily) {
-  return this.members.filter(member => member.role === 'parent');
+familySchema.virtual('parentUsers', {
+  ref: 'User',
+  localField: 'members.user',
+  foreignField: '_id',
+  match: { 'members.role': 'parent' }
 });
 
-familySchema.virtual('children').get(function(this: IFamily) {
-  return this.members.filter(member => member.role === 'child');
+familySchema.virtual('childUsers', {
+  ref: 'User',
+  localField: 'members.user',
+  foreignField: '_id',
+  match: { 'members.role': 'child' }
 });
+
+// Helper methods to get member user IDs
+familySchema.methods.getParentIds = function(): Types.ObjectId[] {
+  return this.members
+    .filter((member: IFamilyMember) => member.role === 'parent')
+    .map((member: IFamilyMember) => member.user);
+};
+
+familySchema.methods.getChildIds = function(): Types.ObjectId[] {
+  return this.members
+    .filter((member: IFamilyMember) => member.role === 'child')
+    .map((member: IFamilyMember) => member.user);
+};
 
 // Indexes for better query performance
 familySchema.index({ createdBy: 1 });
-familySchema.index({ 'members.userId': 1 }, { sparse: true });
+familySchema.index({ 'members.user': 1 });
 
 // Add the toJSON plugin
 familySchema.plugin(toJSON);
@@ -108,6 +132,15 @@ familySchema.pre('save', function(next) {
     const hasParent = this.members.some(member => member.role === 'parent');
     if (!hasParent) {
       const error = new Error('Family must have at least one parent');
+      return next(error);
+    }
+    
+    // Ensure user references are unique
+    const userIds = this.members.map(member => member.user.toString());
+    const uniqueUserIds = Array.from(new Set(userIds));
+    
+    if (userIds.length !== uniqueUserIds.length) {
+      const error = new Error('Duplicate user references are not allowed in family members');
       return next(error);
     }
   }

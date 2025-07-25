@@ -391,7 +391,7 @@ const features: {
 // - Good to use when multiples features are available.
 // - Autoscroll the list of features (optional).
 const FeaturesListicle = () => {
-  const featuresEndRef = useRef<null>(null);
+  const featuresEndRef = useRef<HTMLParagraphElement>(null);
   const [featureSelected, setFeatureSelected] = useState<string>(
     features[0].name
   );
@@ -496,10 +496,10 @@ const FeaturesListicle = () => {
               key={featureSelected}
             >
               <h3 className="font-semibold text-base-content text-lg">
-                {features.find((f) => f.name === featureSelected)["name"]}
+                {features.find((f) => f.name === featureSelected)?.name}
               </h3>
 
-              {features.find((f) => f.name === featureSelected)["description"]}
+              {features.find((f) => f.name === featureSelected)?.description}
             </div>
           </div>
         </div>

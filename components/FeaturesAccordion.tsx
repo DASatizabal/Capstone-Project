@@ -124,7 +124,7 @@ const Item = ({
   isOpen: boolean;
   setFeatureSelected: () => void;
 }) => {
-  const accordion = useRef(null);
+  const accordion = useRef<HTMLDivElement>(null);
   const { title, description, svg } = feature;
 
   return (
@@ -154,7 +154,7 @@ const Item = ({
         className={`transition-all duration-300 ease-in-out text-base-content-secondary overflow-hidden`}
         style={
           isOpen
-            ? { maxHeight: accordion?.current?.scrollHeight, opacity: 1 }
+            ? { maxHeight: accordion.current?.scrollHeight, opacity: 1 }
             : { maxHeight: 0, opacity: 0 }
         }
       >
@@ -192,8 +192,8 @@ const Media = ({ feature }: { feature: Feature }) => {
   } else if (type === "image") {
     return (
       <Image
-        src={path}
-        alt={alt}
+        src={path || ""}
+        alt={alt || "Feature image"}
         className={`${style} object-cover object-center`}
         width={size.width}
         height={size.height}

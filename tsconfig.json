@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "target": "es5",
     "lib": [
       "dom",
       "dom.iterable",
@@ -7,7 +8,7 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "incremental": true,
@@ -17,11 +18,14 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noImplicitAny": true,
+    "downlevelIteration": true,
     "jsx": "preserve",
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@/lib/*": ["./lib/*"],
+      "@/models/*": ["./models/*"],
+      "@/app/*": ["./app/*"]
     },
     "plugins": [
       {
