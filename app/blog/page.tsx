@@ -1,13 +1,13 @@
-import { categories, articles } from "./_assets/content";
-import CardArticle from "./_assets/components/CardArticle";
-import CardCategory from "./_assets/components/CardCategory";
 import config from "@/config";
 import { getSEOTags } from "@/libs/seo";
 
+import CardArticle from "./_assets/components/CardArticle";
+import CardCategory from "./_assets/components/CardCategory";
+import { categories, articles } from "./_assets/content";
+
 export const metadata = getSEOTags({
   title: `${config.appName} Blog`,
-  description:
-    "Learn how to ship your startup in days, not weeks",
+  description: "Learn how to ship your startup in days, not weeks",
   canonicalUrlRelative: "/blog",
 });
 
@@ -15,7 +15,7 @@ export default async function Blog() {
   const articlesToDisplay = articles
     .sort(
       (a, b) =>
-        new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf()
+        new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf(),
     )
     .slice(0, 6);
   return (

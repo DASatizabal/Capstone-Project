@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
+
 import connectMongo from "@/libs/mongoose";
 import Lead from "@/models/Lead";
 
@@ -28,6 +29,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({});
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : String(e) },
+      { status: 500 },
+    );
   }
 }

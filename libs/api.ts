@@ -1,6 +1,7 @@
 import axios from "axios";
-import { toast } from "react-hot-toast";
 import { signIn } from "next-auth/react";
+import { toast } from "react-hot-toast";
+
 import config from "@/config";
 
 // use this to interact with our own API (/app/api folder) from the front-end side
@@ -10,10 +11,10 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.response.use(
-  function (response) {
+  (response) => {
     return response.data;
   },
-  function (error) {
+  (error) => {
     let message = "";
 
     if (error.response?.status === 401) {
@@ -41,7 +42,7 @@ apiClient.interceptors.response.use(
       toast.error("something went wrong...");
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

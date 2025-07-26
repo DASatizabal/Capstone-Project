@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getSEOTags } from "@/libs/seo";
+
 import config from "@/config";
+import { getSEOTags } from "@/libs/seo";
 
 // CHATGPT PROMPT TO GENERATE YOUR TERMS & SERVICES — replace with your own data 👇
 
@@ -16,7 +17,7 @@ import config from "@/config";
 // - Name: FeNAgO
 // - Contact information: support@fenago.com
 // - Description: A Next.js agentic SaaS boilerplate to help entrepreneurs build AI-powered applications more efficiently
-// - Ownership: when buying a package, users can download code to create apps. 
+// - Ownership: when buying a package, users can download code to create apps.
 // - User data collected: name, email and payment information
 // - Non-personal data collection: web cookies
 // - Link to privacy-policy: https://fenago.com/privacy-policy

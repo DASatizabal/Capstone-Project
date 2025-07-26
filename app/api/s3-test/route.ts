@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { uploadToS3 } from "@/libs/s3";
 
 export async function GET() {
@@ -15,7 +16,7 @@ export async function GET() {
     console.error("❌ S3 Upload Error:", error);
     return NextResponse.json(
       { error: error.message || "Unknown error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

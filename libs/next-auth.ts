@@ -1,9 +1,11 @@
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth from "next-auth";
 import type { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import GoogleProvider from "next-auth/providers/google";
+
 import config from "@/config";
+
 import clientPromise from "./mongo"; // ✅ mongo.ts exports clientPromise
 
 interface NextAuthOptionsExtended extends NextAuthOptions {
@@ -12,12 +14,12 @@ interface NextAuthOptionsExtended extends NextAuthOptions {
 
 export const authOptions: NextAuthOptionsExtended = {
   // Set any random key in .env.local
-  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-key',
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-key",
   providers: [
     GoogleProvider({
       // Follow the "Login with Google" tutorial to get your credentials
-      clientId: process.env.GOOGLE_ID || '',
-      clientSecret: process.env.GOOGLE_SECRET || '',
+      clientId: process.env.GOOGLE_ID || "",
+      clientSecret: process.env.GOOGLE_SECRET || "",
       async profile(profile) {
         return {
           id: profile.sub,
@@ -38,7 +40,7 @@ export const authOptions: NextAuthOptionsExtended = {
               port: 465,
               auth: {
                 user: "resend",
-                pass: process.env.RESEND_API_KEY || '',
+                pass: process.env.RESEND_API_KEY || "",
               },
             },
             from: config.resend.fromNoReply,
@@ -54,7 +56,7 @@ export const authOptions: NextAuthOptionsExtended = {
   callbacks: {
     session: async ({ session, token }) => {
       if (session?.user) {
-        (session.user as any).id = token.sub || '';
+        (session.user as any).id = token.sub || "";
       }
       return session;
     },

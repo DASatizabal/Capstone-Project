@@ -1,5 +1,6 @@
-import type { JSX } from "react";
 import Image, { StaticImageData } from "next/image";
+import type { JSX } from "react";
+
 import marcImg from "@/app/blog/_assets/images/authors/marc.png";
 import introducingSupabaseImg from "@/public/blog/introducing-supabase/header.png";
 
@@ -208,7 +209,7 @@ export const articles: articleType[] = [
       "Supabase is an open-source Firebase alternative. It's a great tool for building a backend for your app. It's now integrated with ShipFast!",
     // An array of categories of the article. It's used to generate the category badges, the category filter, and more.
     categories: [
-      categories.find((category) => category.slug === categorySlugs.feature)!
+      categories.find((category) => category.slug === categorySlugs.feature)!,
     ],
     // The author of the article. It's used to generate a link to the author's bio page.
     author: authors.find((author) => author.slug === authorSlugs.marc)!,

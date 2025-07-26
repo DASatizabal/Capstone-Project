@@ -1,6 +1,8 @@
 import Image from "next/image";
-import TestimonialsAvatars from "./TestimonialsAvatars";
+
 import config from "@/config";
+
+import TestimonialsAvatars from "./TestimonialsAvatars";
 
 const Hero = () => {
   return (
@@ -10,16 +12,13 @@ const Hero = () => {
           Launch your Agentic SaaS in days, not weeks
         </h1>
         <p className="text-lg opacity-80 leading-relaxed">
-          FeNAgO empowers students, developers, startups, and entrepreneurs to build
-          fully agentic SaaS solutions at lightning speed by handling security
-          (logins & registration), database setup, SEO, and monetization right out
-          of the box—powered by Next.js, Tailwind, and React. All you bring is
-          your idea!
+          FeNAgO empowers students, developers, startups, and entrepreneurs to
+          build fully agentic SaaS solutions at lightning speed by handling
+          security (logins & registration), database setup, SEO, and
+          monetization right out of the box—powered by Next.js, Tailwind, and
+          React. All you bring is your idea!
         </p>
-        <a
-          href="https://fenago.com"
-          className="btn btn-primary btn-wide"
-        >
+        <a href="https://fenago.com" className="btn btn-primary btn-wide">
           Get {config.appName}
         </a>
 

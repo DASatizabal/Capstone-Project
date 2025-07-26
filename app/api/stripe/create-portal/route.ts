@@ -1,7 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/libs/next-auth";
+
 import connectMongo from "@/libs/mongoose";
+import { authOptions } from "@/libs/next-auth";
 import { createCustomerPortal } from "@/libs/stripe";
 import User from "@/models/User";
 
@@ -24,12 +25,12 @@ export async function POST(req: NextRequest) {
             error:
               "You don't have a billing account yet. Make a purchase first.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       } else if (!body.returnUrl) {
         return NextResponse.json(
           { error: "Return URL is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -43,7 +44,10 @@ export async function POST(req: NextRequest) {
       });
     } catch (e) {
       console.error(e);
-      return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+      return NextResponse.json(
+        { error: e instanceof Error ? e.message : String(e) },
+        { status: 500 },
+      );
     }
   } else {
     // Not Signed in

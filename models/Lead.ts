@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 import toJSON from "./plugins/toJSON";
 
 // LEAD SCHEMA is used to store the leads that are generated from the landing page.
@@ -17,7 +18,7 @@ const leadSchema = new mongoose.Schema(
   {
     timestamps: true,
     toJSON: { virtuals: true },
-  }
+  },
 );
 
 // add plugin that converts mongoose to json

@@ -1,8 +1,8 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError } from "axios";
 
 // OpenAI API types
 interface OpenAIMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
@@ -34,11 +34,11 @@ interface OpenAIResponse {
 function isOpenAIResponse(data: any): data is OpenAIResponse {
   return (
     data &&
-    typeof data === 'object' &&
+    typeof data === "object" &&
     Array.isArray(data.choices) &&
     data.choices.length > 0 &&
     data.choices[0].message &&
-    typeof data.choices[0].message.content === 'string' &&
+    typeof data.choices[0].message.content === "string" &&
     data.usage
   );
 }
@@ -48,17 +48,15 @@ export const sendOpenAi = async (
   messages: OpenAIMessage[],
   userId: number,
   max = 100,
-  temp = 1
+  temp = 1,
 ): Promise<string | null> => {
-  const url = 'https://api.openai.com/v1/chat/completions';
+  const url = "https://api.openai.com/v1/chat/completions";
 
-  console.log('Ask GPT >>>');
-  messages.map((m) =>
-    console.log(' - ' + m.role.toUpperCase() + ': ' + m.content)
-  );
+  console.log("Ask GPT >>>");
+  messages.map((m) => console.log(` - ${m.role.toUpperCase()}: ${m.content}`));
 
   const body = JSON.stringify({
-    model: 'gpt-4',
+    model: "gpt-4",
     messages,
     max_tokens: max,
     temperature: temp,
@@ -68,7 +66,7 @@ export const sendOpenAi = async (
   const options = {
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   };
 
@@ -77,29 +75,28 @@ export const sendOpenAi = async (
 
     // Type guard to ensure response structure
     if (!isOpenAIResponse(res.data)) {
-      console.error('Invalid response structure from OpenAI API');
+      console.error("Invalid response structure from OpenAI API");
       return null;
     }
 
     const answer = res.data.choices[0].message.content;
     const usage = res.data.usage;
 
-    console.log('>>> ' + answer);
+    console.log(`>>> ${answer}`);
     console.log(
-      'TOKENS USED: ' +
-        usage.total_tokens +
-        ' (prompt: ' +
-        usage.prompt_tokens +
-        ' / response: ' +
-        usage.completion_tokens +
-        ')'
+      `TOKENS USED: ${usage.total_tokens} (prompt: ${
+        usage.prompt_tokens
+      } / response: ${usage.completion_tokens})`,
     );
-    console.log('\n');
+    console.log("\n");
 
     return answer;
   } catch (e) {
     const error = e as AxiosError;
-    console.error('GPT Error: ' + error?.response?.status, error?.response?.data);
+    console.error(
+      `GPT Error: ${error?.response?.status}`,
+      error?.response?.data,
+    );
     return null;
   }
 };

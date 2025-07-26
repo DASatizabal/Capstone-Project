@@ -221,7 +221,7 @@ const features: {
 
                 {item}
               </li>
-            )
+            ),
           )}
           <li className="flex items-center gap-3 text-accent font-medium">
             <svg
@@ -393,7 +393,7 @@ const features: {
 const FeaturesListicle = () => {
   const featuresEndRef = useRef<HTMLParagraphElement>(null);
   const [featureSelected, setFeatureSelected] = useState<string>(
-    features[0].name
+    features[0].name,
   );
   const [hasClicked, setHasClicked] = useState<boolean>(false);
 
@@ -404,7 +404,7 @@ const FeaturesListicle = () => {
     const interval = setInterval(() => {
       if (!hasClicked) {
         const index = features.findIndex(
-          (feature) => feature.name === featureSelected
+          (feature) => feature.name === featureSelected,
         );
         const nextIndex = (index + 1) % features.length;
         setFeatureSelected(features[nextIndex].name);
@@ -424,7 +424,7 @@ const FeaturesListicle = () => {
           root: null,
           rootMargin: "0px",
           threshold: 0.5,
-        }
+        },
       );
       if (featuresEndRef.current) {
         observer.observe(featuresEndRef.current);

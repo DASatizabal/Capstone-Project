@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
-import { categories, articles } from "../../_assets/content";
+
+import config from "@/config";
+import { getSEOTags } from "@/libs/seo";
+
 import CardArticle from "../../_assets/components/CardArticle";
 import CardCategory from "../../_assets/components/CardCategory";
-import { getSEOTags } from "@/libs/seo";
-import config from "@/config";
+import { categories, articles } from "../../_assets/content";
 
 export async function generateMetadata({
   params,
@@ -11,7 +13,7 @@ export async function generateMetadata({
   params: { categoryId: string };
 }) {
   const category = categories.find(
-    (category) => category.slug === params.categoryId
+    (category) => category.slug === params.categoryId,
   );
 
   if (!category) {
@@ -31,20 +33,20 @@ export default async function Category({
   params: { categoryId: string };
 }) {
   const category = categories.find(
-    (category) => category.slug === params.categoryId
+    (category) => category.slug === params.categoryId,
   );
-  
+
   if (!category) {
     notFound();
   }
-  
+
   const articlesInCategory = articles
     .filter((article) =>
-      article.categories.map((c) => c.slug).includes(category.slug)
+      article.categories.map((c) => c.slug).includes(category.slug),
     )
     .sort(
       (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
     )
     .slice(0, 3);
 

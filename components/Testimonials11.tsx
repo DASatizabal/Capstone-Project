@@ -1,8 +1,9 @@
 "use client";
 
-import { JSX, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { StaticImageData } from "next/image";
+import { JSX, useState, useEffect, useRef } from "react";
+
 import config from "@/config";
 
 // Use this object to add an icon to the testimonial (optional) like the Product Hunt logo for instance.

@@ -1,9 +1,11 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { authors, articles } from "../../_assets/content";
-import CardArticle from "../../_assets/components/CardArticle";
-import { getSEOTags } from "@/libs/seo";
+
 import config from "@/config";
+import { getSEOTags } from "@/libs/seo";
+
+import CardArticle from "../../_assets/components/CardArticle";
+import { authors, articles } from "../../_assets/content";
 
 export async function generateMetadata({
   params,
@@ -29,16 +31,16 @@ export default async function Author({
   params: { authorId: string };
 }) {
   const author = authors.find((author) => author.slug === params.authorId);
-  
+
   if (!author) {
     notFound();
   }
-  
+
   const articlesByAuthor = articles
     .filter((article) => article.author.slug === author.slug)
     .sort(
       (a, b) =>
-        new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf()
+        new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf(),
     );
 
   return (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import config from "@/config";
 
 // These are all the SEO tags you can add to your pages.
@@ -29,7 +30,7 @@ export const getSEOTags = ({
     metadataBase: new URL(
       process.env.NODE_ENV === "development"
         ? "http://localhost:3000/"
-        : `https://${config.domainName}/`
+        : `https://${config.domainName}/`,
     ),
 
     openGraph: {

@@ -1,17 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import dbConnect from '@/lib/dbConnect';
-import Chore from '@/models/Chore';
-import User from '@/models/User';
-import Family from '@/models/Family';
-import { Types, Document } from 'mongoose';
+import { Types, Document } from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+
+import { authOptions } from "@/lib/auth";
+import dbConnect from "@/lib/dbConnect";
+import Chore from "@/models/Chore";
+import Family from "@/models/Family";
+import User from "@/models/User";
 
 // Define a type for the user document with populated families
-type UserWithFamilies = Document<unknown, {}, {
-  _id: Types.ObjectId;
-  families: Array<{ _id: Types.ObjectId }>;
-}> & {
+type UserWithFamilies = Document<
+  unknown,
+  {},
+  {
+    _id: Types.ObjectId;
+    families: Array<{ _id: Types.ObjectId }>;
+  }
+> & {
   _id: Types.ObjectId;
   families: Array<{ _id: Types.ObjectId }>;
 };
@@ -21,34 +26,42 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
 
     // Get user's families with proper typing
-    const user = await User.findById(session.user.id).populate<{ families: Array<{ _id: Types.ObjectId }> }>('families').lean().exec() as unknown as UserWithFamilies | null;
+    const user = (await User.findById(session.user.id)
+      .populate<{ families: Array<{ _id: Types.ObjectId }> }>("families")
+      .lean()
+      .exec()) as unknown as UserWithFamilies | null;
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    
+
     // Safely access families with type assertion
     const userWithFamilies = user as unknown as UserWithFamilies;
-    const userFamilyIds = (userWithFamilies.families || []).map(family => family._id.toString());
+    const userFamilyIds = (userWithFamilies.families || []).map((family) =>
+      family._id.toString(),
+    );
 
     // Parse query parameters
     const searchParams = req.nextUrl.searchParams;
-    const familyId = searchParams.get('familyId');
-    const status = searchParams.get('status');
-    const assignedTo = searchParams.get('assignedTo');
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const skip = parseInt(searchParams.get('skip') || '0');
+    const familyId = searchParams.get("familyId");
+    const status = searchParams.get("status");
+    const assignedTo = searchParams.get("assignedTo");
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const skip = parseInt(searchParams.get("skip") || "0");
 
     // Build query
     const query: any = {};
-    
+
     // Filter by family
-    if (familyId && user.families.some((f: any) => f._id.toString() === familyId)) {
+    if (
+      familyId &&
+      user.families.some((f: any) => f._id.toString() === familyId)
+    ) {
       query.family = familyId;
     } else {
       // Get chores from all user's families
@@ -56,7 +69,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Filter by status
-    if (status && ['pending', 'in_progress', 'completed', 'verified', 'overdue'].includes(status)) {
+    if (
+      status &&
+      ["pending", "in_progress", "completed", "verified", "overdue"].includes(
+        status,
+      )
+    ) {
       query.status = status;
     }
 
@@ -67,15 +85,15 @@ export async function GET(req: NextRequest) {
 
     // Check for overdue chores
     const now = new Date();
-    if (status === 'overdue') {
+    if (status === "overdue") {
       query.dueDate = { $lt: now };
-      query.status = { $in: ['pending', 'in_progress'] };
+      query.status = { $in: ["pending", "in_progress"] };
     }
 
     const chores = await Chore.find(query)
-      .populate('assignedTo', 'name email avatar')
-      .populate('createdBy', 'name email')
-      .populate('family', 'name')
+      .populate("assignedTo", "name email avatar")
+      .populate("createdBy", "name email")
+      .populate("family", "name")
       .sort({ dueDate: 1, priority: -1 })
       .limit(limit)
       .skip(skip);
@@ -88,14 +106,14 @@ export async function GET(req: NextRequest) {
         total,
         limit,
         skip,
-        hasMore: skip + chores.length < total
-      }
+        hasMore: skip + chores.length < total,
+      },
     });
   } catch (error) {
-    console.error('Error fetching chores:', error);
+    console.error("Error fetching chores:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch chores' },
-      { status: 500 }
+      { error: "Failed to fetch chores" },
+      { status: 500 },
     );
   }
 }
@@ -105,7 +123,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
@@ -120,14 +138,14 @@ export async function POST(req: NextRequest) {
       requiresPhotoVerification,
       recurrence,
       instructions,
-      category
+      category,
     } = body;
 
     // Validate required fields
     if (!title || !familyId || !assignedTo) {
       return NextResponse.json(
-        { error: 'Title, familyId, and assignedTo are required' },
-        { status: 400 }
+        { error: "Title, familyId, and assignedTo are required" },
+        { status: 400 },
       );
     }
 
@@ -136,45 +154,45 @@ export async function POST(req: NextRequest) {
     // Verify user belongs to the family and has permission to create chores
     const family = await Family.findById(familyId);
     if (!family) {
-      return NextResponse.json({ error: 'Family not found' }, { status: 404 });
+      return NextResponse.json({ error: "Family not found" }, { status: 404 });
     }
 
     // Type assertion for family members with role
-    const familyWithMembers = family as unknown as { 
-      members: Array<{ 
-        user: Types.ObjectId; 
-        role: 'parent' | 'child' | 'admin';
-      }> 
+    const familyWithMembers = family as unknown as {
+      members: Array<{
+        user: Types.ObjectId;
+        role: "parent" | "child" | "admin";
+      }>;
     };
-    
+
     const userMember = familyWithMembers.members.find(
-      (m) => m.user.toString() === session.user.id
+      (m) => m.user.toString() === session.user.id,
     );
 
     if (!userMember) {
       return NextResponse.json(
-        { error: 'You are not a member of this family' },
-        { status: 403 }
+        { error: "You are not a member of this family" },
+        { status: 403 },
       );
     }
 
     // Only parents and guardians can create chores
-    if (!['parent', 'guardian'].includes(userMember.role)) {
+    if (!["parent", "guardian"].includes(userMember.role)) {
       return NextResponse.json(
-        { error: 'Only parents and guardians can create chores' },
-        { status: 403 }
+        { error: "Only parents and guardians can create chores" },
+        { status: 403 },
       );
     }
 
     // Validate assignedTo if provided
     if (assignedTo) {
       const assignedMember = family.members.find(
-        (m: any) => m.user.toString() === assignedTo
+        (m: any) => m.user.toString() === assignedTo,
       );
       if (!assignedMember) {
         return NextResponse.json(
-          { error: 'Assigned user is not a member of this family' },
-          { status: 400 }
+          { error: "Assigned user is not a member of this family" },
+          { status: 400 },
         );
       }
     }
@@ -188,35 +206,37 @@ export async function POST(req: NextRequest) {
       assignedBy: new Types.ObjectId(session.user.id),
       createdBy: new Types.ObjectId(session.user.id),
       dueDate: dueDate ? new Date(dueDate) : undefined,
-      priority: priority || 'medium',
+      priority: priority || "medium",
       points: points || 10,
       requiresPhotoVerification: requiresPhotoVerification || false,
-      recurrence: recurrence || { type: 'none' },
+      recurrence: recurrence || { type: "none" },
       instructions: instructions || [],
-      category: category || 'general',
-      status: 'pending',
-      history: [{
-        action: 'created',
-        timestamp: new Date(),
-        user: new Types.ObjectId(session.user.id)
-      }]
+      category: category || "general",
+      status: "pending",
+      history: [
+        {
+          action: "created",
+          timestamp: new Date(),
+          user: new Types.ObjectId(session.user.id),
+        },
+      ],
     });
 
     // Populate the response
     const populatedChore = await Chore.findById(chore._id)
-      .populate('assignedTo', 'name email avatar')
-      .populate('createdBy', 'name email')
-      .populate('family', 'name');
+      .populate("assignedTo", "name email avatar")
+      .populate("createdBy", "name email")
+      .populate("family", "name");
 
     // TODO: Send notification to assigned user
     // await sendNotification(assignedTo, 'chore_assigned', chore);
 
     return NextResponse.json(populatedChore, { status: 201 });
   } catch (error) {
-    console.error('Error creating chore:', error);
+    console.error("Error creating chore:", error);
     return NextResponse.json(
-      { error: 'Failed to create chore' },
-      { status: 500 }
+      { error: "Failed to create chore" },
+      { status: 500 },
     );
   }
 }
@@ -226,41 +246,46 @@ export async function PUT(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { choreIds, updates } = await req.json();
 
     if (!Array.isArray(choreIds) || choreIds.length === 0) {
       return NextResponse.json(
-        { error: 'choreIds array is required' },
-        { status: 400 }
+        { error: "choreIds array is required" },
+        { status: 400 },
       );
     }
 
     await dbConnect();
 
     // Get user's families with proper typing
-    const user = await User.findById(session.user.id).populate<{ families: Array<{ _id: Types.ObjectId }> }>('families').lean().exec() as unknown as UserWithFamilies | null;
-    
+    const user = (await User.findById(session.user.id)
+      .populate<{ families: Array<{ _id: Types.ObjectId }> }>("families")
+      .lean()
+      .exec()) as unknown as UserWithFamilies | null;
+
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    
+
     // Safely access families with type assertion
     const userWithFamilies = user as unknown as UserWithFamilies;
-    const userFamilyIds = (userWithFamilies.families || []).map(family => family._id.toString());
+    const userFamilyIds = (userWithFamilies.families || []).map((family) =>
+      family._id.toString(),
+    );
 
     // Verify all chores belong to user's families
     const chores = await Chore.find({
       _id: { $in: choreIds },
-      family: { $in: userFamilyIds }
+      family: { $in: userFamilyIds },
     });
 
     if (chores.length !== choreIds.length) {
       return NextResponse.json(
-        { error: 'Some chores not found or unauthorized' },
-        { status: 403 }
+        { error: "Some chores not found or unauthorized" },
+        { status: 403 },
       );
     }
 
@@ -273,10 +298,10 @@ export async function PUT(req: NextRequest) {
 
       // Add history entry
       chore.history.push({
-        action: 'bulk_updated',
+        action: "bulk_updated",
         timestamp: new Date(),
         user: new Types.ObjectId(session.user.id),
-        details: updates
+        details: updates,
       });
 
       return chore.save();
@@ -285,14 +310,14 @@ export async function PUT(req: NextRequest) {
     const updatedChores = await Promise.all(updatePromises);
 
     return NextResponse.json({
-      message: 'Chores updated successfully',
-      updated: updatedChores.length
+      message: "Chores updated successfully",
+      updated: updatedChores.length,
     });
   } catch (error) {
-    console.error('Error bulk updating chores:', error);
+    console.error("Error bulk updating chores:", error);
     return NextResponse.json(
-      { error: 'Failed to update chores' },
-      { status: 500 }
+      { error: "Failed to update chores" },
+      { status: 500 },
     );
   }
 }

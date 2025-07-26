@@ -1,8 +1,9 @@
 import mongoose, { Document, Model, Types } from "mongoose";
+
 import toJSON from "./plugins/toJSON";
 
 // Types for the Family Member subdocument
-export type FamilyMemberRole = 'parent' | 'child' | 'admin';
+export type FamilyMemberRole = "parent" | "child" | "admin";
 
 export interface IFamilyMember {
   name: string;
@@ -28,119 +29,124 @@ export interface IFamily extends Document {
 }
 
 const familyMemberSchema = new mongoose.Schema<IFamilyMember>({
-  name: { 
-    type: String, 
-    required: [true, 'Member name is required'],
-    trim: true
+  name: {
+    type: String,
+    required: [true, "Member name is required"],
+    trim: true,
   },
-  phone: { 
+  phone: {
     type: String,
     validate: {
-      validator: function(v: string) {
+      validator(v: string) {
         // Simple phone number validation (adjust regex as needed)
-        return !v || /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(v);
+        return (
+          !v ||
+          /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(v)
+        );
       },
-      message: (props: any) => `${props.value} is not a valid phone number!`
-    }
+      message: (props: any) => `${props.value} is not a valid phone number!`,
+    },
   },
-  age: { 
+  age: {
     type: Number,
-    min: [0, 'Age cannot be negative'],
-    max: [120, 'Age seems unrealistic']
+    min: [0, "Age cannot be negative"],
+    max: [120, "Age seems unrealistic"],
   },
-  role: { 
-    type: String, 
+  role: {
+    type: String,
     enum: {
       values: ["parent", "child", "admin"],
-      message: 'Role must be "parent", "child", or "admin"'
-    }, 
-    default: "child" 
+      message: 'Role must be "parent", "child", or "admin"',
+    },
+    default: "child",
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  }
+    ref: "User",
+    required: true,
+  },
 });
 
 const familySchema = new mongoose.Schema<IFamily>(
   {
-    name: { 
-      type: String, 
-      required: [true, 'Family name is required'],
+    name: {
+      type: String,
+      required: [true, "Family name is required"],
       trim: true,
-      maxlength: [50, 'Family name cannot be longer than 50 characters']
+      maxlength: [50, "Family name cannot be longer than 50 characters"],
     },
-    createdBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "User", 
-      required: [true, 'Creator user ID is required']
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Creator user ID is required"],
     },
     members: [familyMemberSchema],
   },
   {
     timestamps: true,
-    toJSON: { 
+    toJSON: {
       virtuals: true,
-      transform: function(doc, ret) {
+      transform(doc, ret) {
         // Remove version key and any other sensitive/unecessary fields
         delete ret.__v;
         return ret;
-      }
+      },
     },
-  }
+  },
 );
 
 // Add virtuals for easy access to parents and children
-familySchema.virtual('parentUsers', {
-  ref: 'User',
-  localField: 'members.user',
-  foreignField: '_id',
-  match: { 'members.role': 'parent' }
+familySchema.virtual("parentUsers", {
+  ref: "User",
+  localField: "members.user",
+  foreignField: "_id",
+  match: { "members.role": "parent" },
 });
 
-familySchema.virtual('childUsers', {
-  ref: 'User',
-  localField: 'members.user',
-  foreignField: '_id',
-  match: { 'members.role': 'child' }
+familySchema.virtual("childUsers", {
+  ref: "User",
+  localField: "members.user",
+  foreignField: "_id",
+  match: { "members.role": "child" },
 });
 
 // Helper methods to get member user IDs
-familySchema.methods.getParentIds = function(): Types.ObjectId[] {
+familySchema.methods.getParentIds = function (): Types.ObjectId[] {
   return this.members
-    .filter((member: IFamilyMember) => member.role === 'parent')
+    .filter((member: IFamilyMember) => member.role === "parent")
     .map((member: IFamilyMember) => member.user);
 };
 
-familySchema.methods.getChildIds = function(): Types.ObjectId[] {
+familySchema.methods.getChildIds = function (): Types.ObjectId[] {
   return this.members
-    .filter((member: IFamilyMember) => member.role === 'child')
+    .filter((member: IFamilyMember) => member.role === "child")
     .map((member: IFamilyMember) => member.user);
 };
 
 // Indexes for better query performance
 familySchema.index({ createdBy: 1 });
-familySchema.index({ 'members.user': 1 });
+familySchema.index({ "members.user": 1 });
 
 // Add the toJSON plugin
 familySchema.plugin(toJSON);
 
 // Pre-save hook to ensure at least one parent exists
-familySchema.pre('save', function(next) {
-  if (this.isNew || this.isModified('members')) {
-    const hasParent = this.members.some(member => member.role === 'parent');
+familySchema.pre("save", function (next) {
+  if (this.isNew || this.isModified("members")) {
+    const hasParent = this.members.some((member) => member.role === "parent");
     if (!hasParent) {
-      const error = new Error('Family must have at least one parent');
+      const error = new Error("Family must have at least one parent");
       return next(error);
     }
-    
+
     // Ensure user references are unique
-    const userIds = this.members.map(member => member.user.toString());
+    const userIds = this.members.map((member) => member.user.toString());
     const uniqueUserIds = Array.from(new Set(userIds));
-    
+
     if (userIds.length !== uniqueUserIds.length) {
-      const error = new Error('Duplicate user references are not allowed in family members');
+      const error = new Error(
+        "Duplicate user references are not allowed in family members",
+      );
       return next(error);
     }
   }
@@ -148,6 +154,7 @@ familySchema.pre('save', function(next) {
 });
 
 // Create the model with proper typing
-const Family: Model<IFamily> = mongoose.models.Family || mongoose.model<IFamily>("Family", familySchema);
+const Family: Model<IFamily> =
+  mongoose.models.Family || mongoose.model<IFamily>("Family", familySchema);
 
 export default Family;

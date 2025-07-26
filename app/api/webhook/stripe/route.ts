@@ -1,16 +1,17 @@
-import { NextResponse, NextRequest } from "next/server";
 import { headers } from "next/headers";
+import { NextResponse, NextRequest } from "next/server";
 import Stripe from "stripe";
-import connectMongo from "@/libs/mongoose";
+
 import configFile from "@/config";
-import User from "@/models/User";
+import connectMongo from "@/libs/mongoose";
 import { findCheckoutSession } from "@/libs/stripe";
+import User from "@/models/User";
 
 if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not defined');
+  throw new Error("STRIPE_SECRET_KEY is not defined");
 }
 if (!process.env.STRIPE_WEBHOOK_SECRET) {
-  throw new Error('STRIPE_WEBHOOK_SECRET is not defined');
+  throw new Error("STRIPE_WEBHOOK_SECRET is not defined");
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -36,12 +37,17 @@ export async function POST(req: NextRequest) {
   // verify Stripe event is legit
   try {
     if (!signature) {
-      throw new Error('Missing stripe-signature header');
+      throw new Error("Missing stripe-signature header");
     }
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
-    console.error(`Webhook signature verification failed. ${err instanceof Error ? err.message : String(err)}`);
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 400 });
+    console.error(
+      `Webhook signature verification failed. ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : String(err) },
+      { status: 400 },
+    );
   }
 
   eventType = event.type;
@@ -64,7 +70,7 @@ export async function POST(req: NextRequest) {
         if (!plan) break;
 
         const customer = (await stripe.customers.retrieve(
-          customerId as string
+          customerId as string,
         )) as Stripe.Customer;
 
         let user;
@@ -91,7 +97,8 @@ export async function POST(req: NextRequest) {
         if (user) {
           // Update user data + Grant user access to your product. It's a boolean in the database, but could be a number of credits, etc...
           user.priceId = priceId;
-          user.customerId = typeof customerId === 'string' ? customerId : undefined;
+          user.customerId =
+            typeof customerId === "string" ? customerId : undefined;
           user.hasAccess = true;
           await user.save();
         }
@@ -126,7 +133,7 @@ export async function POST(req: NextRequest) {
           .object as Stripe.Subscription;
 
         const subscription = await stripe.subscriptions.retrieve(
-          stripeObject.id
+          stripeObject.id,
         );
         const user = await User.findOne({ customerId: subscription.customer });
 

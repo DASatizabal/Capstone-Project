@@ -1,7 +1,8 @@
-import Link from "next/link";
 import Image from "next/image";
-import config from "@/config";
+import Link from "next/link";
+
 import logo from "@/app/icon.png";
+import config from "@/config";
 
 // Add the Footer to the bottom of your landing page and more.
 // The support link is connected to the config.js file. If there's no config.resend.supportEmail, the link won't be displayed.
@@ -36,8 +37,6 @@ const Footer = () => {
             <p className="mt-3 text-sm text-base-content/60">
               Copyright © {new Date().getFullYear()} - All rights reserved
             </p>
-
-
           </div>
           <div className="flex-grow flex flex-wrap justify-center -mb-10 md:mt-0 mt-10 text-center">
             <div className="lg:w-1/3 md:w-1/2 w-full px-4">

@@ -31,9 +31,11 @@ export const createCheckout = async ({
   try {
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecretKey) {
-      throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
+      throw new Error(
+        "STRIPE_SECRET_KEY is not defined in environment variables",
+      );
     }
-    
+
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2023-08-16", // TODO: update this when Stripe updates their API
       typescript: true,
@@ -85,10 +87,10 @@ export const createCheckout = async ({
       ...extraParams,
     });
 
-    return stripeSession.url || '';
+    return stripeSession.url || "";
   } catch (e) {
     console.error(e);
-    return '';
+    return "";
   }
 };
 
@@ -99,9 +101,11 @@ export const createCustomerPortal = async ({
 }: CreateCustomerPortalParams): Promise<string> => {
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecretKey) {
-    throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
+    throw new Error(
+      "STRIPE_SECRET_KEY is not defined in environment variables",
+    );
   }
-  
+
   const stripe = new Stripe(stripeSecretKey, {
     apiVersion: "2023-08-16", // TODO: update this when Stripe updates their API
     typescript: true,
@@ -120,9 +124,11 @@ export const findCheckoutSession = async (sessionId: string) => {
   try {
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecretKey) {
-      throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
+      throw new Error(
+        "STRIPE_SECRET_KEY is not defined in environment variables",
+      );
     }
-    
+
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: "2023-08-16", // TODO: update this when Stripe updates their API
       typescript: true,

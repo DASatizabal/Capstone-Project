@@ -1,4 +1,5 @@
 import themes from "daisyui/src/theming/themes";
+
 import { ConfigProps } from "./types/config";
 
 const config = {
@@ -33,8 +34,8 @@ const config = {
         // If you have an anchor price (i.e. $29) that you want to display crossed out, put it here. Otherwise, leave it empty
         priceAnchor: 7.49,
         features: [
-          { 
-            name: "20 Monthly Messages", 
+          {
+            name: "20 Monthly Messages",
           },
           { name: "Add up to 2 kids." },
           { name: "Give them up to 3 Chores" },
@@ -52,8 +53,8 @@ const config = {
         price: 7.99,
         priceAnchor: 11.99,
         features: [
-          { 
-            name: "30 Monthly Messages", 
+          {
+            name: "30 Monthly Messages",
           },
           { name: "Add up to 5 kids." },
           { name: "Give them up to 10 Chores." },
@@ -70,7 +71,8 @@ const config = {
         // This plan will look different on the pricing page, it will be highlighted. You can only have one plan with isFeatured: true
         isFeatured: false,
         name: "The Nanny",
-        description: "For busy parents, outgunned and outnumbered by messy children. Use only when all hope is lost.",
+        description:
+          "For busy parents, outgunned and outnumbered by messy children. Use only when all hope is lost.",
         price: 12.99,
         priceAnchor: 19.99,
         features: [
@@ -82,9 +84,9 @@ const config = {
           { name: "Help them with AI Instructions." },
           { name: "Set reocurring schedules." },
           { name: "Set rewards." },
-          { name: "Online Support."},
-          { name: "24/7 AI Child psychiatric assistance."},
-          { name: "Daily tips on how to manage your busy household."}
+          { name: "Online Support." },
+          { name: "24/7 AI Child psychiatric assistance." },
+          { name: "Daily tips on how to manage your busy household." },
         ],
       },
     ],

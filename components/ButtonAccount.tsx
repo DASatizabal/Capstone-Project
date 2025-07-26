@@ -1,9 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
 import { Popover, Transition } from "@headlessui/react";
 import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
+
 import apiClient from "@/libs/api";
 
 // A button to show user some account actions
@@ -27,7 +28,7 @@ const ButtonAccount = () => {
         "/stripe/create-portal",
         {
           returnUrl: window.location.href,
-        }
+        },
       );
 
       window.location.href = url;

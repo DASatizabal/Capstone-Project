@@ -1,8 +1,14 @@
-import { Types } from 'mongoose';
+import { Types } from "mongoose";
 
-export type ChoreStatus = 'pending' | 'in_progress' | 'completed' | 'verified' | 'rejected' | 'overdue';
-export type ChorePriority = 'low' | 'medium' | 'high';
-export type RecurrenceType = 'once' | 'daily' | 'weekly' | 'monthly' | 'custom';
+export type ChoreStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "verified"
+  | "rejected"
+  | "overdue";
+export type ChorePriority = "low" | "medium" | "high";
+export type RecurrenceType = "once" | "daily" | "weekly" | "monthly" | "custom";
 
 export interface IChore {
   _id: Types.ObjectId;
@@ -41,7 +47,7 @@ export interface IChore {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
-  
+
   // Virtuals
   isOverdue: boolean;
   isRecurring: boolean;
@@ -88,7 +94,7 @@ export interface ChoreFilterOptions {
   limit?: number;
   skip?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export interface ChorePaginationResult {

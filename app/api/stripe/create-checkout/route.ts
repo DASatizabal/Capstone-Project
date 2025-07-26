@@ -1,8 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth/next";
+
+import connectMongo from "@/libs/mongoose";
 import { authOptions } from "@/libs/next-auth";
 import { createCheckout } from "@/libs/stripe";
-import connectMongo from "@/libs/mongoose";
 import User from "@/models/User";
 
 // This function is used to create a Stripe Checkout Session (one-time payment or subscription)
@@ -14,12 +15,12 @@ export async function POST(req: NextRequest) {
   if (!body.priceId) {
     return NextResponse.json(
       { error: "Price ID is required" },
-      { status: 400 }
+      { status: 400 },
     );
   } else if (!body.successUrl || !body.cancelUrl) {
     return NextResponse.json(
       { error: "Success and cancel URLs are required" },
-      { status: 400 }
+      { status: 400 },
     );
   } else if (!body.mode) {
     return NextResponse.json(
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
         error:
           "Mode is required (either 'payment' for one-time payments or 'subscription' for recurring subscription)",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -56,6 +57,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: stripeSessionURL });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : String(e) },
+      { status: 500 },
+    );
   }
 }

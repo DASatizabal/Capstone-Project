@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef } from "react";
 import type { JSX } from "react";
-import Image from "next/image";
 
 interface Feature {
   title: string;

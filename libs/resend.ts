@@ -1,6 +1,7 @@
 import { Resend } from "resend";
+
+import { renderWelcomeEmail } from "@/components/emails/WelcomeEmail";
 import config from "@/config";
-import { renderWelcomeEmail } from '@/components/emails/WelcomeEmail';
 
 if (!process.env.RESEND_API_KEY) {
   throw new Error("RESEND_API_KEY is not set");
@@ -20,22 +21,22 @@ export const emailService = {
         appName: config.appName,
         dashboardUrl: `${process.env.NEXTAUTH_URL}/dashboard`,
       });
-      
+
       const { data, error } = await resend.emails.send({
         from: config.resend.fromNoReply,
         to: [to],
         subject: `Welcome to ${config.appName}!`,
         html,
       });
-      
+
       if (error) {
-        console.error('Error sending welcome email:', error);
+        console.error("Error sending welcome email:", error);
         return { success: false, error };
       }
-      
+
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to send welcome email:', error);
+      console.error("Failed to send welcome email:", error);
       return { success: false, error };
     }
   },
@@ -63,7 +64,7 @@ export const emailService = {
       return { success: false, error };
     }
   }, */
-  
+
   /**
    * Send a password reset email
    */
@@ -85,23 +86,27 @@ export const emailService = {
           <p>This link will expire in 1 hour.</p>
         `,
       });
-      
+
       if (error) {
-        console.error('Error sending password reset email:', error);
+        console.error("Error sending password reset email:", error);
         return { success: false, error };
       }
-      
+
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to send password reset email:', error);
+      console.error("Failed to send password reset email:", error);
       return { success: false, error };
     }
   },
-  
+
   /**
    * Send a notification email
    */
-  sendNotificationEmail: async (to: string, subject: string, message: string) => {
+  sendNotificationEmail: async (
+    to: string,
+    subject: string,
+    message: string,
+  ) => {
     try {
       const { data, error } = await resend.emails.send({
         from: config.resend.fromAdmin,
@@ -112,15 +117,15 @@ export const emailService = {
           <div>${message}</div>
         `,
       });
-      
+
       if (error) {
-        console.error('Error sending notification email:', error);
+        console.error("Error sending notification email:", error);
         return { success: false, error };
       }
-      
+
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to send notification email:', error);
+      console.error("Failed to send notification email:", error);
       return { success: false, error };
     }
   },

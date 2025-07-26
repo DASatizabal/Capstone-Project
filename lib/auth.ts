@@ -1,16 +1,21 @@
-import { AuthOptions, Session, User as NextAuthUser, DefaultSession } from 'next-auth';
-import { MongoDBAdapter } from '@auth/mongodb-adapter';
-import { clientPromise } from './mongodb';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { User, IUser } from '@/models';
-import dbConnect from './dbConnect';
-import { Adapter } from 'next-auth/adapters';
-import { JWT } from 'next-auth/jwt';
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import {
+  AuthOptions,
+  Session,
+  User as NextAuthUser,
+  DefaultSession,
+} from "next-auth";
+import { Adapter } from "next-auth/adapters";
+import { JWT } from "next-auth/jwt";
+import CredentialsProvider from "next-auth/providers/credentials";
 
+import { User, IUser } from "@/models";
 
+import dbConnect from "./dbConnect";
+import { clientPromise } from "./mongodb";
 
 // Extend the built-in types for our application
-declare module 'next-auth' {
+declare module "next-auth" {
   interface User {
     id: string;
     name?: string | null;
@@ -18,16 +23,16 @@ declare module 'next-auth' {
     image?: string | null;
     role?: string;
   }
-  
+
   interface Session {
     user: {
       id: string;
       role: string;
-    } & DefaultSession['user'];
+    } & DefaultSession["user"];
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: string;
@@ -37,39 +42,44 @@ declare module 'next-auth/jwt' {
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(clientPromise) as Adapter,
   session: {
-    strategy: 'jwt', // Use JWT for session management
+    strategy: "jwt", // Use JWT for session management
   },
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter your email and password');
+          throw new Error("Please enter your email and password");
         }
 
         await dbConnect();
         const user = await User.findOne({ email: credentials.email })
-          .select('+hashedPassword')
+          .select("+hashedPassword")
           .lean()
           .exec();
 
-        if (!user || !('hashedPassword' in user)) {
-          throw new Error('Invalid email or password');
+        if (!user || !("hashedPassword" in user)) {
+          throw new Error("Invalid email or password");
         }
 
         // Type assertion to access the comparePassword method
-        const userWithMethods = user as IUser & { comparePassword: (password: string) => Promise<boolean> };
-        
+        const userWithMethods = user as IUser & {
+          comparePassword: (password: string) => Promise<boolean>;
+        };
+
         // Import bcrypt dynamically to avoid issues with edge runtime
-        const bcrypt = await import('bcryptjs');
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.hashedPassword || '');
+        const bcrypt = await import("bcryptjs");
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.hashedPassword || "",
+        );
 
         if (!isPasswordValid) {
-          throw new Error('Invalid email or password');
+          throw new Error("Invalid email or password");
         }
 
         // Return only the necessary user data
@@ -77,7 +87,7 @@ export const authOptions: AuthOptions = {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
-          role: user.role || 'user',
+          role: user.role || "user",
         };
       },
     }),
@@ -86,23 +96,21 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role || 'user';
+        token.role = (user as any).role || "user";
       }
       return token;
     },
     async session({ session, token }) {
       if (session?.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.id = token.id;
+        session.user.role = token.role;
       }
       return session;
     },
   },
   pages: {
-    signIn: '/auth/signin', // Custom sign-in page
+    signIn: "/auth/signin", // Custom sign-in page
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NODE_ENV === "development",
 };
-
-

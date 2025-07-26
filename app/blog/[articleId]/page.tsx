@@ -1,11 +1,13 @@
 import Link from "next/link";
-import Script from "next/script";
 import { notFound } from "next/navigation";
-import { articles } from "../_assets/content";
-import BadgeCategory from "../_assets/components/BadgeCategory";
-import Avatar from "../_assets/components/Avatar";
-import { getSEOTags } from "@/libs/seo";
+import Script from "next/script";
+
 import config from "@/config";
+import { getSEOTags } from "@/libs/seo";
+
+import Avatar from "../_assets/components/Avatar";
+import BadgeCategory from "../_assets/components/BadgeCategory";
+import { articles } from "../_assets/content";
 
 export async function generateMetadata({
   params,
@@ -47,22 +49,22 @@ export default async function Article({
   params: { articleId: string };
 }) {
   const article = articles.find((article) => article.slug === params.articleId);
-  
+
   if (!article) {
     notFound();
   }
-  
+
   const articlesRelated = articles
     .filter(
       (a) =>
         a.slug !== params.articleId &&
         a.categories.some((c) =>
-          article.categories.map((c) => c.slug).includes(c.slug)
-        )
+          article.categories.map((c) => c.slug).includes(c.slug),
+        ),
     )
     .sort(
       (a, b) =>
-        new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf()
+        new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf(),
     )
     .slice(0, 3);
 

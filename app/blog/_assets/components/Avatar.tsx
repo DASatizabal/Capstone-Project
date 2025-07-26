@@ -1,5 +1,6 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+
 import { articleType } from "../content";
 
 // This is the author avatar that appears in the article page and in <CardArticle /> component
