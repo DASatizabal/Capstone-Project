@@ -9,7 +9,17 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "prepare": "husky install"
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky install",
+    "test:api": "node scripts/test-api-endpoints.js",
+    "test:api:families": "node scripts/test-api-endpoints.js families",
+    "test:api:photos": "node scripts/test-api-endpoints.js photos",
+    "test:api:notifications": "node scripts/test-api-endpoints.js notifications",
+    "test:api:cron": "node scripts/test-api-endpoints.js cron",
+    "sample-data": "node scripts/create-sample-data.js",
+    "sample-data:full": "node scripts/create-sample-data.js full",
+    "sample-data:minimal": "node scripts/create-sample-data.js minimal",
+    "sample-data:clear": "node scripts/create-sample-data.js clear"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

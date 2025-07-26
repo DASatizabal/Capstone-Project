@@ -14,11 +14,15 @@ interface RouteParams {
   };
 }
 
-// Helper function to optimize image (basic version without sharp)
+import { optimizeImageBuffer } from '@/lib/image-optimization';
+
+// Helper function to optimize image
 async function optimizeImage(buffer: Buffer, contentType: string): Promise<Buffer> {
-  // For now, return the original buffer
-  // You can add sharp integration later for proper optimization
-  return buffer;
+  return await optimizeImageBuffer(buffer, contentType, {
+    maxWidth: 1920,
+    maxHeight: 1080,
+    quality: 0.8
+  });
 }
 
 // POST /api/chores/[id]/photos - Upload photo for chore verification
