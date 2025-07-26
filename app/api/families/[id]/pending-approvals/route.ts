@@ -1,10 +1,11 @@
 // app/api/families/[id]/pending-approvals/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import dbConnect from '@/lib/dbConnect';
-import Chore from '@/models/Chore';
-import Family from '@/models/Family';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+
+import { authOptions } from "@/lib/auth";
+import dbConnect from "@/lib/dbConnect";
+import Chore from "@/models/Chore";
+import Family from "@/models/Family";
 
 interface RouteParams {
   params: {
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
@@ -25,17 +26,17 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     // Verify user is a parent in this family
     const family = await Family.findById(params.id);
     if (!family) {
-      return NextResponse.json({ error: 'Family not found' }, { status: 404 });
+      return NextResponse.json({ error: "Family not found" }, { status: 404 });
     }
 
     const userMember = family.members.find(
-      (m: any) => m.user.toString() === session.user.id
+      (m: any) => m.user.toString() === session.user.id,
     );
 
-    if (!userMember || userMember.role !== 'parent') {
+    if (!userMember || userMember.role !== "parent") {
       return NextResponse.json(
-        { error: 'Only parents can view pending approvals' },
-        { status: 403 }
+        { error: "Only parents can view pending approvals" },
+        { status: 403 },
       );
     }
 
@@ -43,19 +44,20 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const choresWithPendingPhotos = await Chore.find({
       family: params.id,
       requiresPhotoVerification: true,
-      'photoVerification.status': 'pending'
+      "photoVerification.status": "pending",
     })
-    .populate('assignedTo', 'name image')
-    .populate('photoVerification.uploadedBy', 'name image')
-    .sort({ 'photoVerification.uploadedAt': -1 });
+      .populate("assignedTo", "name image")
+      .populate("photoVerification.uploadedBy", "name image")
+      .sort({ "photoVerification.uploadedAt": -1 });
 
     // Format the response
     const pendingApprovals = [];
 
     for (const chore of choresWithPendingPhotos) {
-      const pendingPhotos = chore.photoVerification?.filter(
-        (photo: any) => photo.status === 'pending'
-      ) || [];
+      const pendingPhotos =
+        chore.photoVerification?.filter(
+          (photo: any) => photo.status === "pending",
+        ) || [];
 
       if (pendingPhotos.length > 0) {
         pendingApprovals.push({
@@ -68,21 +70,23 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
             points: chore.points,
             dueDate: chore.dueDate,
             completedAt: chore.completedAt,
-            assignedTo: chore.assignedTo
+            assignedTo: chore.assignedTo,
           },
           pendingPhotos: pendingPhotos.map((photo: any, index: number) => {
             // Find the actual index in the full photoVerification array
             const actualIndex = chore.photoVerification?.findIndex(
-              (p: any) => p.url === photo.url && p.uploadedAt.getTime() === photo.uploadedAt.getTime()
+              (p: any) =>
+                p.url === photo.url &&
+                p.uploadedAt.getTime() === photo.uploadedAt.getTime(),
             );
-            
+
             return {
               index: actualIndex,
               url: photo.url,
               uploadedAt: photo.uploadedAt,
-              uploadedBy: photo.uploadedBy
+              uploadedBy: photo.uploadedBy,
             };
-          })
+          }),
         });
       }
     }
@@ -90,25 +94,25 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     // Get summary statistics
     const totalPendingPhotos = pendingApprovals.reduce(
       (sum, approval) => sum + approval.pendingPhotos.length,
-      0
+      0,
     );
 
     return NextResponse.json({
       family: {
         id: family._id,
-        name: family.name
+        name: family.name,
       },
       summary: {
         totalChoresWithPendingPhotos: pendingApprovals.length,
-        totalPendingPhotos
+        totalPendingPhotos,
       },
-      pendingApprovals
+      pendingApprovals,
     });
   } catch (error) {
-    console.error('Error fetching pending approvals:', error);
+    console.error("Error fetching pending approvals:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch pending approvals' },
-      { status: 500 }
+      { error: "Failed to fetch pending approvals" },
+      { status: 500 },
     );
   }
 }
@@ -118,7 +122,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { approvals } = await req.json();
@@ -126,31 +130,34 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     // Validate input
     if (!Array.isArray(approvals) || approvals.length === 0) {
       return NextResponse.json(
-        { error: 'Approvals array is required' },
-        { status: 400 }
+        { error: "Approvals array is required" },
+        { status: 400 },
       );
     }
 
     // Validate each approval
     for (const approval of approvals) {
-      if (!approval.choreId || !['approve', 'reject'].includes(approval.action)) {
+      if (
+        !approval.choreId ||
+        !["approve", "reject"].includes(approval.action)
+      ) {
         return NextResponse.json(
-          { error: 'Each approval must have choreId and valid action' },
-          { status: 400 }
-        );
-      }
-      
-      if (typeof approval.photoIndex !== 'number' || approval.photoIndex < 0) {
-        return NextResponse.json(
-          { error: 'Each approval must have a valid photoIndex' },
-          { status: 400 }
+          { error: "Each approval must have choreId and valid action" },
+          { status: 400 },
         );
       }
 
-      if (approval.action === 'reject' && !approval.rejectionReason) {
+      if (typeof approval.photoIndex !== "number" || approval.photoIndex < 0) {
         return NextResponse.json(
-          { error: 'Rejection reason is required for rejected photos' },
-          { status: 400 }
+          { error: "Each approval must have a valid photoIndex" },
+          { status: 400 },
+        );
+      }
+
+      if (approval.action === "reject" && !approval.rejectionReason) {
+        return NextResponse.json(
+          { error: "Rejection reason is required for rejected photos" },
+          { status: 400 },
         );
       }
     }
@@ -160,17 +167,17 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     // Verify user is a parent in this family
     const family = await Family.findById(params.id);
     if (!family) {
-      return NextResponse.json({ error: 'Family not found' }, { status: 404 });
+      return NextResponse.json({ error: "Family not found" }, { status: 404 });
     }
 
     const userMember = family.members.find(
-      (m: any) => m.user.toString() === session.user.id
+      (m: any) => m.user.toString() === session.user.id,
     );
 
-    if (!userMember || userMember.role !== 'parent') {
+    if (!userMember || userMember.role !== "parent") {
       return NextResponse.json(
-        { error: 'Only parents can approve or reject photos' },
-        { status: 403 }
+        { error: "Only parents can approve or reject photos" },
+        { status: 403 },
       );
     }
 
@@ -181,7 +188,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       try {
         const chore = await Chore.findOne({
           _id: approval.choreId,
-          family: params.id
+          family: params.id,
         });
 
         if (!chore) {
@@ -189,55 +196,58 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             choreId: approval.choreId,
             photoIndex: approval.photoIndex,
             success: false,
-            error: 'Chore not found'
+            error: "Chore not found",
           });
           continue;
         }
 
-        if (!chore.photoVerification || !chore.photoVerification[approval.photoIndex]) {
+        if (
+          !chore.photoVerification ||
+          !chore.photoVerification[approval.photoIndex]
+        ) {
           results.push({
             choreId: approval.choreId,
             photoIndex: approval.photoIndex,
             success: false,
-            error: 'Photo not found'
+            error: "Photo not found",
           });
           continue;
         }
 
         const photo = chore.photoVerification[approval.photoIndex];
 
-        if (photo.status !== 'pending') {
+        if (photo.status !== "pending") {
           results.push({
             choreId: approval.choreId,
             photoIndex: approval.photoIndex,
             success: false,
-            error: `Photo already ${photo.status}`
+            error: `Photo already ${photo.status}`,
           });
           continue;
         }
 
         // Update photo status
-        photo.status = approval.action === 'approve' ? 'approved' : 'rejected';
+        photo.status = approval.action === "approve" ? "approved" : "rejected";
         photo.reviewedAt = new Date();
         photo.reviewedBy = session.user.id;
-        
-        if (approval.action === 'reject') {
+
+        if (approval.action === "reject") {
           photo.rejectionReason = approval.rejectionReason;
         }
 
         // Update chore status
-        if (approval.action === 'approve') {
+        if (approval.action === "approve") {
           const allPhotosApproved = chore.photoVerification.every(
-            (p: any) => p.status === 'approved'
+            (p: any) => p.status === "approved",
           );
 
           if (allPhotosApproved) {
-            chore.status = 'verified';
+            chore.status = "verified";
             chore.verifiedAt = new Date();
             chore.verifiedBy = session.user.id;
           }
         } else {
-          chore.status = 'pending';
+          chore.status = "pending";
           chore.rejectionReason = approval.rejectionReason;
           chore.completedAt = undefined;
           chore.completedBy = undefined;
@@ -245,14 +255,17 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
         // Add to history
         chore.history.push({
-          action: approval.action === 'approve' ? 'photo_approved' : 'photo_rejected',
+          action:
+            approval.action === "approve" ? "photo_approved" : "photo_rejected",
           timestamp: new Date(),
           user: session.user.id,
           details: {
             photoIndex: approval.photoIndex,
             photoUrl: photo.url,
-            ...(approval.action === 'reject' && { rejectionReason: approval.rejectionReason })
-          }
+            ...(approval.action === "reject" && {
+              rejectionReason: approval.rejectionReason,
+            }),
+          },
         });
 
         await chore.save();
@@ -262,36 +275,39 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
           photoIndex: approval.photoIndex,
           success: true,
           action: approval.action,
-          newChoreStatus: chore.status
+          newChoreStatus: chore.status,
         });
       } catch (error) {
-        console.error(`Error processing approval for chore ${approval.choreId}:`, error);
+        console.error(
+          `Error processing approval for chore ${approval.choreId}:`,
+          error,
+        );
         results.push({
           choreId: approval.choreId,
           photoIndex: approval.photoIndex,
           success: false,
-          error: 'Processing failed'
+          error: "Processing failed",
         });
       }
     }
 
-    const successCount = results.filter(r => r.success).length;
-    const failureCount = results.filter(r => !r.success).length;
+    const successCount = results.filter((r) => r.success).length;
+    const failureCount = results.filter((r) => !r.success).length;
 
     return NextResponse.json({
       message: `Processed ${successCount} approvals successfully, ${failureCount} failed`,
       summary: {
         total: results.length,
         successful: successCount,
-        failed: failureCount
+        failed: failureCount,
       },
-      results
+      results,
     });
   } catch (error) {
-    console.error('Error processing bulk approvals:', error);
+    console.error("Error processing bulk approvals:", error);
     return NextResponse.json(
-      { error: 'Failed to process approvals' },
-      { status: 500 }
+      { error: "Failed to process approvals" },
+      { status: 500 },
     );
   }
 }

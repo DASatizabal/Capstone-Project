@@ -1,18 +1,19 @@
 // lib/notification-service.ts
-import { Resend } from 'resend';
-import config from '@/config';
-import NotificationLog from '@/models/NotificationLog';
-import dbConnect from '@/lib/dbConnect';
-import { 
+import { Resend } from "resend";
+
+import {
   renderChoreAssignmentEmail,
   renderChoreReminderEmail,
   renderChoreCompletionEmail,
   renderPhotoApprovalEmail,
-  renderPhotoRejectionEmail
-} from '@/components/emails/ChoreEmails';
+  renderPhotoRejectionEmail,
+} from "@/components/emails/ChoreEmails";
+import config from "@/config";
+import dbConnect from "@/lib/dbConnect";
+import NotificationLog from "@/models/NotificationLog";
 
 if (!process.env.RESEND_API_KEY) {
-  throw new Error('RESEND_API_KEY is not set');
+  throw new Error("RESEND_API_KEY is not set");
 }
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -46,7 +47,7 @@ export interface ChoreNotificationData {
     name: string;
   };
   dueDate?: Date;
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
   points: number;
   requiresPhotoVerification: boolean;
 }
@@ -75,10 +76,10 @@ async function createNotificationLog(data: {
       type: data.type as any,
       recipient: data.recipient,
       subject: data.subject,
-      metadata: data.metadata
+      metadata: data.metadata,
     });
   } catch (error) {
-    console.error('Error creating notification log:', error);
+    console.error("Error creating notification log:", error);
     return null;
   }
 }
@@ -94,38 +95,38 @@ async function sendEmailWithLogging(
     recipient: string;
     subject: string;
     metadata?: any;
-  }
+  },
 ) {
   // Create log entry
   const log = await createNotificationLog(logData);
-  
+
   try {
     const { data, error } = await resend.emails.send(emailData);
-    
+
     if (error) {
       // Mark as failed in log
       if (log) {
         await log.markAsFailed({
-          message: error.message || 'Unknown error',
+          message: error.message || "Unknown error",
           code: error.name,
-          details: error
+          details: error,
         });
       }
       return { success: false, error, logId: log?._id };
     }
-    
+
     // Mark as sent in log
     if (log) {
       await log.markAsSent(data?.id, data);
     }
-    
+
     return { success: true, data, logId: log?._id };
   } catch (error) {
     // Mark as failed in log
     if (log) {
       await log.markAsFailed({
-        message: error instanceof Error ? error.message : 'Unknown error',
-        details: error
+        message: error instanceof Error ? error.message : "Unknown error",
+        details: error,
       });
     }
     return { success: false, error, logId: log?._id };
@@ -141,7 +142,7 @@ export const notificationService = {
     try {
       const html = await renderChoreAssignmentEmail({
         choreTitle: data.choreTitle,
-        choreDescription: data.choreDescription || '',
+        choreDescription: data.choreDescription || "",
         assignedToName: data.assignedTo.name,
         assignedByName: data.assignedBy.name,
         familyName: data.family.name,
@@ -150,7 +151,7 @@ export const notificationService = {
         points: data.points,
         requiresPhotoVerification: data.requiresPhotoVerification,
         choreUrl: `${process.env.NEXTAUTH_URL}/chores/${data.choreId}`,
-        appName: config.appName
+        appName: config.appName,
       });
 
       const subject = `New Chore Assigned: ${data.choreTitle}`;
@@ -166,7 +167,7 @@ export const notificationService = {
           userId: data.assignedTo.id,
           familyId: data.family.id,
           choreId: data.choreId,
-          type: 'chore_assignment',
+          type: "chore_assignment",
           recipient: data.assignedTo.email,
           subject,
           metadata: {
@@ -175,12 +176,12 @@ export const notificationService = {
             points: data.points,
             familyName: data.family.name,
             assignedByName: data.assignedBy.name,
-            requiresPhotoVerification: data.requiresPhotoVerification
-          }
-        }
+            requiresPhotoVerification: data.requiresPhotoVerification,
+          },
+        },
       );
     } catch (error) {
-      console.error('Failed to send chore assignment notification:', error);
+      console.error("Failed to send chore assignment notification:", error);
       return { success: false, error };
     }
   },
@@ -188,11 +189,13 @@ export const notificationService = {
   /**
    * Send chore reminder notification
    */
-  sendChoreReminderNotification: async (data: ChoreNotificationData & { daysUntilDue: number }) => {
+  sendChoreReminderNotification: async (
+    data: ChoreNotificationData & { daysUntilDue: number },
+  ) => {
     try {
       const html = await renderChoreReminderEmail({
         choreTitle: data.choreTitle,
-        choreDescription: data.choreDescription || '',
+        choreDescription: data.choreDescription || "",
         assignedToName: data.assignedTo.name,
         familyName: data.family.name,
         dueDate: data.dueDate!,
@@ -200,24 +203,24 @@ export const notificationService = {
         priority: data.priority,
         points: data.points,
         choreUrl: `${process.env.NEXTAUTH_URL}/chores/${data.choreId}`,
-        appName: config.appName
+        appName: config.appName,
       });
 
       const { data: emailData, error } = await resend.emails.send({
         from: config.resend.fromAdmin,
         to: [data.assignedTo.email],
-        subject: `Reminder: ${data.choreTitle} ${data.daysUntilDue === 0 ? 'is due today!' : `due in ${data.daysUntilDue} day${data.daysUntilDue === 1 ? '' : 's'}`}`,
+        subject: `Reminder: ${data.choreTitle} ${data.daysUntilDue === 0 ? "is due today!" : `due in ${data.daysUntilDue} day${data.daysUntilDue === 1 ? "" : "s"}`}`,
         html,
       });
 
       if (error) {
-        console.error('Error sending chore reminder email:', error);
+        console.error("Error sending chore reminder email:", error);
         return { success: false, error };
       }
 
       return { success: true, data: emailData };
     } catch (error) {
-      console.error('Failed to send chore reminder notification:', error);
+      console.error("Failed to send chore reminder notification:", error);
       return { success: false, error };
     }
   },
@@ -225,42 +228,45 @@ export const notificationService = {
   /**
    * Send chore completion notification to parents
    */
-  sendChoreCompletionNotification: async (data: ChoreNotificationData, parentEmails: string[]) => {
+  sendChoreCompletionNotification: async (
+    data: ChoreNotificationData,
+    parentEmails: string[],
+  ) => {
     try {
       const html = await renderChoreCompletionEmail({
         choreTitle: data.choreTitle,
-        choreDescription: data.choreDescription || '',
+        choreDescription: data.choreDescription || "",
         completedByName: data.assignedTo.name,
         familyName: data.family.name,
         points: data.points,
         requiresPhotoVerification: data.requiresPhotoVerification,
         choreUrl: `${process.env.NEXTAUTH_URL}/chores/${data.choreId}`,
-        appName: config.appName
+        appName: config.appName,
       });
 
-      const emailPromises = parentEmails.map(email => 
+      const emailPromises = parentEmails.map((email) =>
         resend.emails.send({
           from: config.resend.fromAdmin,
           to: [email],
           subject: `${data.assignedTo.name} completed: ${data.choreTitle}`,
           html,
-        })
+        }),
       );
 
       const results = await Promise.allSettled(emailPromises);
-      const failures = results.filter(result => result.status === 'rejected');
+      const failures = results.filter((result) => result.status === "rejected");
 
       if (failures.length > 0) {
-        console.error('Some completion emails failed:', failures);
+        console.error("Some completion emails failed:", failures);
       }
 
-      return { 
+      return {
         success: failures.length === 0,
         sentCount: results.length - failures.length,
-        totalRecipients: parentEmails.length
+        totalRecipients: parentEmails.length,
       };
     } catch (error) {
-      console.error('Failed to send chore completion notifications:', error);
+      console.error("Failed to send chore completion notifications:", error);
       return { success: false, error };
     }
   },
@@ -277,7 +283,7 @@ export const notificationService = {
         points: data.points,
         photoUrl: data.photoUrl,
         choreUrl: `${process.env.NEXTAUTH_URL}/chores/${data.choreId}`,
-        appName: config.appName
+        appName: config.appName,
       });
 
       const { data: emailData, error } = await resend.emails.send({
@@ -288,13 +294,13 @@ export const notificationService = {
       });
 
       if (error) {
-        console.error('Error sending photo approval email:', error);
+        console.error("Error sending photo approval email:", error);
         return { success: false, error };
       }
 
       return { success: true, data: emailData };
     } catch (error) {
-      console.error('Failed to send photo approval notification:', error);
+      console.error("Failed to send photo approval notification:", error);
       return { success: false, error };
     }
   },
@@ -308,10 +314,10 @@ export const notificationService = {
         choreTitle: data.choreTitle,
         childName: data.assignedTo.name,
         familyName: data.family.name,
-        rejectionReason: data.rejectionReason || 'Please retake the photo',
+        rejectionReason: data.rejectionReason || "Please retake the photo",
         photoUrl: data.photoUrl,
         choreUrl: `${process.env.NEXTAUTH_URL}/chores/${data.choreId}`,
-        appName: config.appName
+        appName: config.appName,
       });
 
       const { data: emailData, error } = await resend.emails.send({
@@ -322,13 +328,13 @@ export const notificationService = {
       });
 
       if (error) {
-        console.error('Error sending photo rejection email:', error);
+        console.error("Error sending photo rejection email:", error);
         return { success: false, error };
       }
 
       return { success: true, data: emailData };
     } catch (error) {
-      console.error('Failed to send photo rejection notification:', error);
+      console.error("Failed to send photo rejection notification:", error);
       return { success: false, error };
     }
   },
@@ -336,12 +342,24 @@ export const notificationService = {
   /**
    * Send daily digest to parents
    */
-  sendDailyDigest: async (parentEmail: string, familyName: string, digest: {
-    completedChores: Array<{ title: string; completedBy: string; points: number }>;
-    overdueChores: Array<{ title: string; assignedTo: string; daysOverdue: number }>;
-    pendingApprovals: number;
-    totalPointsEarned: number;
-  }) => {
+  sendDailyDigest: async (
+    parentEmail: string,
+    familyName: string,
+    digest: {
+      completedChores: Array<{
+        title: string;
+        completedBy: string;
+        points: number;
+      }>;
+      overdueChores: Array<{
+        title: string;
+        assignedTo: string;
+        daysOverdue: number;
+      }>;
+      pendingApprovals: number;
+      totalPointsEarned: number;
+    },
+  ) => {
     try {
       const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -357,27 +375,41 @@ export const notificationService = {
             </ul>
           </div>
 
-          ${digest.completedChores.length > 0 ? `
+          ${
+            digest.completedChores.length > 0
+              ? `
           <div style="margin: 20px 0;">
             <h3>✅ Completed Chores</h3>
             <ul>
-              ${digest.completedChores.map(chore => 
-                `<li><strong>${chore.title}</strong> by ${chore.completedBy} (+${chore.points} points)</li>`
-              ).join('')}
+              ${digest.completedChores
+                .map(
+                  (chore) =>
+                    `<li><strong>${chore.title}</strong> by ${chore.completedBy} (+${chore.points} points)</li>`,
+                )
+                .join("")}
             </ul>
           </div>
-          ` : ''}
+          `
+              : ""
+          }
 
-          ${digest.overdueChores.length > 0 ? `
+          ${
+            digest.overdueChores.length > 0
+              ? `
           <div style="margin: 20px 0;">
             <h3>⚠️ Overdue Chores</h3>
             <ul>
-              ${digest.overdueChores.map(chore => 
-                `<li><strong>${chore.title}</strong> assigned to ${chore.assignedTo} (${chore.daysOverdue} days overdue)</li>`
-              ).join('')}
+              ${digest.overdueChores
+                .map(
+                  (chore) =>
+                    `<li><strong>${chore.title}</strong> assigned to ${chore.assignedTo} (${chore.daysOverdue} days overdue)</li>`,
+                )
+                .join("")}
             </ul>
           </div>
-          ` : ''}
+          `
+              : ""
+          }
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
             <p>
@@ -397,13 +429,13 @@ export const notificationService = {
       });
 
       if (error) {
-        console.error('Error sending daily digest:', error);
+        console.error("Error sending daily digest:", error);
         return { success: false, error };
       }
 
       return { success: true, data: emailData };
     } catch (error) {
-      console.error('Failed to send daily digest:', error);
+      console.error("Failed to send daily digest:", error);
       return { success: false, error };
     }
   },
@@ -428,13 +460,13 @@ export const notificationService = {
       });
 
       if (error) {
-        console.error('Error sending test notification:', error);
+        console.error("Error sending test notification:", error);
         return { success: false, error };
       }
 
       return { success: true, data };
     } catch (error) {
-      console.error('Failed to send test notification:', error);
+      console.error("Failed to send test notification:", error);
       return { success: false, error };
     }
   },

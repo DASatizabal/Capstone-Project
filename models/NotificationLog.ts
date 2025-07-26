@@ -1,54 +1,61 @@
 // models/NotificationLog.ts
-import mongoose, { Document, Model, Schema, Types } from 'mongoose';
-import toJSON from './plugins/toJSON';
+import mongoose, { Document, Model, Schema, Types } from "mongoose";
 
-export type NotificationType = 
-  | 'chore_assignment'
-  | 'chore_reminder'
-  | 'chore_completion'
-  | 'photo_approval'
-  | 'photo_rejection'
-  | 'daily_digest'
-  | 'weekly_report'
-  | 'test';
+import toJSON from "./plugins/toJSON";
 
-export type NotificationStatus = 'pending' | 'sent' | 'failed' | 'bounced' | 'opened' | 'clicked';
+export type NotificationType =
+  | "chore_assignment"
+  | "chore_reminder"
+  | "chore_completion"
+  | "photo_approval"
+  | "photo_rejection"
+  | "daily_digest"
+  | "weekly_report"
+  | "test";
+
+export type NotificationStatus =
+  | "pending"
+  | "sent"
+  | "failed"
+  | "bounced"
+  | "opened"
+  | "clicked";
 
 export interface INotificationLog extends Document {
   // Core fields
   user: Types.ObjectId;
   family?: Types.ObjectId;
   chore?: Types.ObjectId;
-  
+
   // Notification details
   type: NotificationType;
   status: NotificationStatus;
   recipient: string; // email address
   subject: string;
-  
+
   // External service data
   emailId?: string; // Resend email ID
   resendData?: any; // Raw response from Resend
-  
+
   // Tracking
   sentAt?: Date;
   openedAt?: Date;
   clickedAt?: Date;
   bouncedAt?: Date;
   failedAt?: Date;
-  
+
   // Error information
   error?: {
     message: string;
     code?: string;
     details?: any;
   };
-  
+
   // Retry information
   retryCount: number;
   maxRetries: number;
   nextRetryAt?: Date;
-  
+
   // Metadata
   metadata?: {
     choreTitle?: string;
@@ -58,7 +65,7 @@ export interface INotificationLog extends Document {
     familyName?: string;
     [key: string]: any;
   };
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,39 +74,39 @@ const notificationLogSchema = new Schema<INotificationLog>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       index: true,
     },
     family: {
       type: Schema.Types.ObjectId,
-      ref: 'Family',
+      ref: "Family",
       index: true,
     },
     chore: {
       type: Schema.Types.ObjectId,
-      ref: 'Chore',
+      ref: "Chore",
       index: true,
     },
     type: {
       type: String,
       enum: [
-        'chore_assignment',
-        'chore_reminder',
-        'chore_completion',
-        'photo_approval',
-        'photo_rejection',
-        'daily_digest',
-        'weekly_report',
-        'test'
+        "chore_assignment",
+        "chore_reminder",
+        "chore_completion",
+        "photo_approval",
+        "photo_rejection",
+        "daily_digest",
+        "weekly_report",
+        "test",
       ],
       required: true,
       index: true,
     },
     status: {
       type: String,
-      enum: ['pending', 'sent', 'failed', 'bounced', 'opened', 'clicked'],
-      default: 'pending',
+      enum: ["pending", "sent", "failed", "bounced", "opened", "clicked"],
+      default: "pending",
       index: true,
     },
     recipient: {
@@ -179,7 +186,7 @@ const notificationLogSchema = new Schema<INotificationLog>(
         return ret;
       },
     },
-  }
+  },
 );
 
 // Indexes for efficient queries
@@ -189,10 +196,13 @@ notificationLogSchema.index({ status: 1, nextRetryAt: 1 });
 notificationLogSchema.index({ createdAt: -1 });
 
 // TTL index to automatically delete old logs (optional - keep 90 days)
-notificationLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
+notificationLogSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 90 * 24 * 60 * 60 },
+);
 
 // Virtual for calculating delivery time
-notificationLogSchema.virtual('deliveryTime').get(function() {
+notificationLogSchema.virtual("deliveryTime").get(function () {
   if (this.sentAt && this.createdAt) {
     return this.sentAt.getTime() - this.createdAt.getTime();
   }
@@ -200,40 +210,47 @@ notificationLogSchema.virtual('deliveryTime').get(function() {
 });
 
 // Instance methods
-notificationLogSchema.methods.markAsSent = function(emailId?: string, resendData?: any) {
-  this.status = 'sent';
+notificationLogSchema.methods.markAsSent = function (
+  emailId?: string,
+  resendData?: any,
+) {
+  this.status = "sent";
   this.sentAt = new Date();
   if (emailId) this.emailId = emailId;
   if (resendData) this.resendData = resendData;
   return this.save();
 };
 
-notificationLogSchema.methods.markAsFailed = function(error: { message: string; code?: string; details?: any }) {
-  this.status = 'failed';
+notificationLogSchema.methods.markAsFailed = function (error: {
+  message: string;
+  code?: string;
+  details?: any;
+}) {
+  this.status = "failed";
   this.failedAt = new Date();
   this.error = error;
-  
+
   // Schedule retry if we haven't exceeded max retries
   if (this.retryCount < this.maxRetries) {
     const retryDelayMinutes = Math.pow(2, this.retryCount) * 5; // Exponential backoff: 5, 10, 20 minutes
     this.nextRetryAt = new Date(Date.now() + retryDelayMinutes * 60 * 1000);
   }
-  
+
   return this.save();
 };
 
-notificationLogSchema.methods.markAsOpened = function() {
-  if (this.status === 'sent') {
-    this.status = 'opened';
+notificationLogSchema.methods.markAsOpened = function () {
+  if (this.status === "sent") {
+    this.status = "opened";
     this.openedAt = new Date();
     return this.save();
   }
   return Promise.resolve(this);
 };
 
-notificationLogSchema.methods.markAsClicked = function() {
-  if (['sent', 'opened'].includes(this.status)) {
-    this.status = 'clicked';
+notificationLogSchema.methods.markAsClicked = function () {
+  if (["sent", "opened"].includes(this.status)) {
+    this.status = "clicked";
     this.clickedAt = new Date();
     // Also set openedAt if not already set
     if (!this.openedAt) {
@@ -245,66 +262,68 @@ notificationLogSchema.methods.markAsClicked = function() {
 };
 
 // Static methods
-notificationLogSchema.statics.createLog = function(data: Partial<INotificationLog>) {
+notificationLogSchema.statics.createLog = function (
+  data: Partial<INotificationLog>,
+) {
   return this.create(data);
 };
 
-notificationLogSchema.statics.getFailedNotifications = function(limit = 100) {
+notificationLogSchema.statics.getFailedNotifications = function (limit = 100) {
   return this.find({
-    status: 'failed',
+    status: "failed",
     retryCount: { $lt: this.schema.paths.maxRetries.options.default },
-    nextRetryAt: { $lte: new Date() }
+    nextRetryAt: { $lte: new Date() },
   })
-  .limit(limit)
-  .sort({ nextRetryAt: 1 });
+    .limit(limit)
+    .sort({ nextRetryAt: 1 });
 };
 
-notificationLogSchema.statics.getNotificationStats = function(
+notificationLogSchema.statics.getNotificationStats = function (
   userId?: string,
   familyId?: string,
-  days = 30
+  days = 30,
 ) {
   const match: any = {
-    createdAt: { $gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) }
+    createdAt: { $gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) },
   };
-  
+
   if (userId) match.user = new mongoose.Types.ObjectId(userId);
   if (familyId) match.family = new mongoose.Types.ObjectId(familyId);
-  
+
   return this.aggregate([
     { $match: match },
     {
       $group: {
         _id: {
-          type: '$type',
-          status: '$status'
+          type: "$type",
+          status: "$status",
         },
         count: { $sum: 1 },
         avgDeliveryTime: {
           $avg: {
             $cond: [
-              { $and: ['$sentAt', '$createdAt'] },
-              { $subtract: ['$sentAt', '$createdAt'] },
-              null
-            ]
-          }
-        }
-      }
+              { $and: ["$sentAt", "$createdAt"] },
+              { $subtract: ["$sentAt", "$createdAt"] },
+              null,
+            ],
+          },
+        },
+      },
     },
     {
       $group: {
-        _id: '$_id.type',
+        _id: "$_id.type",
         stats: {
           $push: {
-            status: '$_id.status',
-            count: '$count',
-            avgDeliveryTime: '$avgDeliveryTime'
-          }
+            status: "$_id.status",
+            count: "$count",
+            avgDeliveryTime: "$avgDeliveryTime",
+          },
         },
-        totalCount: { $sum: '$count' }
-      }
+        totalCount: { $sum: "$count" },
+      },
     },
-    { $sort: { _id: 1 } }
+    { $sort: { _id: 1 } },
   ]);
 };
 
@@ -312,8 +331,8 @@ notificationLogSchema.statics.getNotificationStats = function(
 notificationLogSchema.plugin(toJSON);
 
 // Create and export the model
-const NotificationLog: Model<INotificationLog> = 
-  mongoose.models.NotificationLog || 
-  mongoose.model<INotificationLog>('NotificationLog', notificationLogSchema);
+const NotificationLog: Model<INotificationLog> =
+  mongoose.models.NotificationLog ||
+  mongoose.model<INotificationLog>("NotificationLog", notificationLogSchema);
 
 export default NotificationLog;
